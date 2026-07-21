@@ -36,11 +36,11 @@ cors:
 adapter:
   restconsumer:
     timeout: 5000
-    url: "http://localhost:8080"
+    url: "${TECHNOLOGY_SERVICE_URL}"
 resilience4j:
   circuitbreaker:
     instances:
-      testGet:
+      checkTechnologiesExistence:
         registerHealthIndicator: true
         failureRateThreshold: 50
         slowCallRateThreshold: 50
@@ -49,7 +49,16 @@ resilience4j:
         slidingWindowSize: 10
         minimumNumberOfCalls: 10
         waitDurationInOpenState: "10s"
-      testPost:
+      linkCapabilityTechnologies:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
+      deleteCapabilityTechnologies:
         registerHealthIndicator: true
         failureRateThreshold: 50
         slowCallRateThreshold: 50

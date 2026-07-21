@@ -29,8 +29,8 @@ public class RestConsumerConfig {
     }
 
     @Bean
-    public WebClient getWebClient(WebClient.Builder builder) {
-        return builder
+    public WebClient getWebClient() {
+        return WebClient.builder()
             .baseUrl(url)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .clientConnector(getClientHttpConnector())
