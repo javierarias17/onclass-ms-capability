@@ -12,13 +12,15 @@ public class Capability {
     private final Long id;
     private final CapabilityName name;
     private final CapabilityDescription description;
-    private final CapabilityStatus status;
+    private final CapabilityStatusEnum status;
+    private final Integer technologyCount;
 
     private Capability(Builder builder) {
         this.id = builder.id;
         this.name = new CapabilityName(builder.name);
         this.description = new CapabilityDescription(builder.description);
         this.status = builder.status;
+        this.technologyCount = builder.technologyCount;
     }
 
     public static Builder builder() {
@@ -37,8 +39,12 @@ public class Capability {
         return description;
     }
 
-    public CapabilityStatus getStatus() {
+    public CapabilityStatusEnum getStatus() {
         return status;
+    }
+
+    public Integer getTechnologyCount() {
+        return technologyCount;
     }
 
     public static class Builder {
@@ -46,7 +52,8 @@ public class Capability {
         private Long id;
         private String name;
         private String description;
-        private CapabilityStatus status;
+        private CapabilityStatusEnum status;
+        private Integer technologyCount;
 
         public Builder id(Long id) {
             this.id = id;
@@ -63,8 +70,13 @@ public class Capability {
             return this;
         }
 
-        public Builder status(CapabilityStatus status) {
+        public Builder status(CapabilityStatusEnum status) {
             this.status = status;
+            return this;
+        }
+
+        public Builder technologyCount(Integer technologyCount) {
+            this.technologyCount = technologyCount;
             return this;
         }
 

@@ -13,4 +13,10 @@ public final class ValidationMessageConstants {
     public static final String MSG_TECHNOLOGY_IDS_MIN_SIZE = "Capability must have at least %d technologies";
     public static final String MSG_TECHNOLOGY_IDS_MAX_SIZE = "Capability must have at most %d technologies";
     public static final String MSG_TECHNOLOGY_IDS_DUPLICATED = "Capability technology ids must not contain duplicates";
+    public static final String MSG_PAGE_MUST_BE_NUMERIC = "Page must be numeric";
+    public static final String MSG_PAGE_OUT_OF_RANGE = "Page must be zero or greater";
+    public static final String MSG_SIZE_MUST_BE_NUMERIC = "Size must be numeric";
+    public static final String MSG_SIZE_OUT_OF_RANGE = "Size must be between %d and %d";
+    public static final String MSG_SORT_BY_INVALID = "Sort field must be one of: name, technologyCount";
+    public static final String MSG_SORT_DIRECTION_INVALID = "Sort direction must be one of: asc, desc";
 }

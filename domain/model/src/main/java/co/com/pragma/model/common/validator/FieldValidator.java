@@ -7,6 +7,8 @@ import java.util.Set;
 
 public final class FieldValidator {
 
+    private static final String NUMERIC_FORMAT_REGEX = "\\d+";
+
     private FieldValidator() {
         throw new IllegalStateException("Utility class");
     }
@@ -53,6 +55,31 @@ public final class FieldValidator {
             return;
         Set<Object> unique = new HashSet<>(value);
         if (unique.size() != value.size())
+            errors.put(field, message);
+    }
+
+    public static void validateNumericFormat(String value, String field, String message,
+                                             Map<String, String> errors) {
+        if (value != null && !value.isBlank() && !value.matches(NUMERIC_FORMAT_REGEX))
+            errors.put(field, message);
+    }
+
+    public static void validateIntegerRange(String value, int min, int max, String field,
+                                            String message, Map<String, String> errors) {
+        if (value != null && !value.isBlank() && value.matches(NUMERIC_FORMAT_REGEX)) {
+            try {
+                int parsed = Integer.parseInt(value);
+                if (parsed < min || parsed > max)
+                    errors.put(field, message);
+            } catch (NumberFormatException e) {
+                errors.put(field, message);
+            }
+        }
+    }
+
+    public static void validateAllowedValue(String value, Set<String> allowedValues, String field,
+                                            String message, Map<String, String> errors) {
+        if (value != null && !value.isBlank() && !allowedValues.contains(value))
             errors.put(field, message);
     }
 }

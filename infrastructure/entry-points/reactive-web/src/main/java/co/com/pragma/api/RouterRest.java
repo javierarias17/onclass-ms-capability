@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -16,9 +17,12 @@ public class RouterRest {
     @Bean
     @RouterOperations({
             @RouterOperation(path = "/api/v1/capabilities", method = {
-                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenRegisterCapability")
+                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenRegisterCapability"),
+            @RouterOperation(path = "/api/v1/capabilities", method = {
+                    RequestMethod.GET }, beanClass = Handler.class, beanMethod = "listenListCapabilities")
     })
     public RouterFunction<ServerResponse> capabilityRouterFunction(Handler handler) {
-        return route(POST("/api/v1/capabilities"), handler::listenRegisterCapability);
+        return route(POST("/api/v1/capabilities"), handler::listenRegisterCapability)
+                .andRoute(GET("/api/v1/capabilities"), handler::listenListCapabilities);
     }
 }

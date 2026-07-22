@@ -20,4 +20,5 @@ public class CapabilityEntity {
     private String name;
     private String description;
     private String status;
+    private Integer technologyCount;
 }

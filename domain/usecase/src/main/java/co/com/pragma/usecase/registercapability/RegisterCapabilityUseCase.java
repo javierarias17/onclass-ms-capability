@@ -4,8 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import co.com.pragma.model.capability.Capability;
-import co.com.pragma.model.capability.CapabilityCreateCommand;
-import co.com.pragma.model.capability.CapabilityStatus;
+import co.com.pragma.model.capability.command.CapabilityCreateCommand;
+import co.com.pragma.model.capability.CapabilityStatusEnum;
 import co.com.pragma.model.capability.exceptions.CapabilityAlreadyExistsException;
 import co.com.pragma.model.capability.exceptions.TechnologiesNotFoundException;
 import co.com.pragma.model.capability.gateways.CapabilityRepository;
@@ -37,7 +37,7 @@ public class RegisterCapabilityUseCase {
     }
 
     private Mono<Capability> resumeOrReject(Capability existingCapability, CapabilityCreateCommand command) {
-        if (existingCapability.getStatus() == CapabilityStatus.COMPLETE)
+        if (existingCapability.getStatus() == CapabilityStatusEnum.COMPLETE)
             return Mono.error(new CapabilityAlreadyExistsException(
                     FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
                     Map.of(FieldConstants.NAME, FunctionalMessageConstants.CAPABILITY_ALREADY_EXISTS)));
@@ -52,7 +52,7 @@ public class RegisterCapabilityUseCase {
                                 .id(capabilityId)
                                 .name(command.name())
                                 .description(command.description())
-                                .status(CapabilityStatus.PENDING)
+                                .status(CapabilityStatusEnum.PENDING)
                                 .build())
                         : Mono.error(new TechnologiesNotFoundException(
                                 FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
@@ -64,7 +64,8 @@ public class RegisterCapabilityUseCase {
                                 .id(savedCapability.getId())
                                 .name(savedCapability.getName().value())
                                 .description(savedCapability.getDescription().value())
-                                .status(CapabilityStatus.COMPLETE)
+                                .status(CapabilityStatusEnum.COMPLETE)
+                                .technologyCount(command.technologyIds().size())
                                 .build()))));
     }
 

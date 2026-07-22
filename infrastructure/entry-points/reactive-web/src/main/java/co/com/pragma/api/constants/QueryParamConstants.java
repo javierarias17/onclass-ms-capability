@@ -1,14 +1,11 @@
-package co.com.pragma.model.common;
+package co.com.pragma.api.constants;
 
-public final class FieldConstants {
+public final class QueryParamConstants {
 
-    private FieldConstants() {
+    private QueryParamConstants() {
         throw new IllegalStateException("Utility class");
     }
 
-    public static final String NAME = "name";
-    public static final String DESCRIPTION = "description";
-    public static final String TECHNOLOGY_IDS = "technologyIds";
     public static final String PAGE = "page";
     public static final String SIZE = "size";
     public static final String SORT_BY = "sortBy";

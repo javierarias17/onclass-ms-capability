@@ -1,8 +1,12 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.CapabilityInDto;
 import co.com.pragma.api.dto.CapabilityOutDto;
+import co.com.pragma.api.dto.CapabilityPageOutDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -93,7 +97,82 @@ public interface IHandlerDocs {
                                     {
                                       "message": "An unexpected error occurred. Please contact the administrator."
                                     }
+                                    """))),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "The service is temporarily unavailable. Please try again shortly."
+                                    }
                                     """)))
     })
     Mono<ServerResponse> listenRegisterCapability(ServerRequest serverRequest);
+
+    @Operation(
+            operationId = "listenListCapabilities",
+            summary = "List capabilities",
+            description = "Returns a paginated list of capabilities, each with its associated technologies (id and name only).",
+            tags = { "Capabilities" },
+            parameters = {
+                    @Parameter(name = QueryParamConstants.PAGE, in = ParameterIn.QUERY, required = false,
+                            schema = @Schema(type = "integer", defaultValue = "0")),
+                    @Parameter(name = QueryParamConstants.SIZE, in = ParameterIn.QUERY, required = false,
+                            schema = @Schema(type = "integer", defaultValue = "10")),
+                    @Parameter(name = QueryParamConstants.SORT_BY, in = ParameterIn.QUERY, required = false,
+                            schema = @Schema(type = "string", allowableValues = { "name", "technologyCount" }, defaultValue = "name")),
+                    @Parameter(name = QueryParamConstants.SORT_DIRECTION, in = ParameterIn.QUERY, required = false,
+                            schema = @Schema(type = "string", allowableValues = { "asc", "desc" }, defaultValue = "asc"))
+            })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CapabilityPageOutDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "content": [
+                                        {
+                                          "id": 1,
+                                          "name": "Backend",
+                                          "description": "Backend development capability",
+                                          "technologies": [
+                                            { "id": 10, "name": "Java" },
+                                            { "id": 11, "name": "Spring" }
+                                          ]
+                                        }
+                                      ],
+                                      "page": 0,
+                                      "size": 10,
+                                      "totalElements": 1,
+                                      "totalPages": 1
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "Business validation failed",
+                                      "errors": [
+                                        {
+                                          "field": "sortBy",
+                                          "message": "Sort field must be one of: name, technologyCount"
+                                        }
+                                      ]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "An unexpected error occurred. Please contact the administrator."
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "The service is temporarily unavailable. Please try again shortly."
+                                    }
+                                    """)))
+    })
+    Mono<ServerResponse> listenListCapabilities(ServerRequest serverRequest);
 }
