@@ -1,6 +1,8 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.constants.QueryParamConstants;
+import co.com.pragma.api.dto.CapabilityExistenceInDto;
+import co.com.pragma.api.dto.CapabilityExistenceOutDto;
 import co.com.pragma.api.dto.CapabilityInDto;
 import co.com.pragma.api.dto.CapabilityOutDto;
 import co.com.pragma.api.dto.CapabilityPageOutDto;
@@ -175,4 +177,51 @@ public interface IHandlerDocs {
                                     """)))
     })
     Mono<ServerResponse> listenListCapabilities(ServerRequest serverRequest);
+
+    @Operation(
+            operationId = "listenCheckCapabilitiesExistence",
+            summary = "Check capabilities existence",
+            description = "Given a list of capability ids, returns the ids that do not exist. An empty list means all of them exist.",
+            tags = { "Capabilities" },
+            requestBody = @RequestBody(
+                    description = "Input data",
+                    required = true,
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CapabilityExistenceInDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "capabilityIds": [1, 2, 3]
+                                    }
+                                    """))))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CapabilityExistenceOutDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "missingIds": [3]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "Business validation failed",
+                                      "errors": [
+                                        {
+                                          "field": "capabilityIds",
+                                          "message": "Capability ids list is required and must not be empty"
+                                        }
+                                      ]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "An unexpected error occurred. Please contact the administrator."
+                                    }
+                                    """)))
+    })
+    Mono<ServerResponse> listenCheckCapabilitiesExistence(ServerRequest serverRequest);
 }

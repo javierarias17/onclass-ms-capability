@@ -1,9 +1,12 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.constants.QueryParamConstants;
+import co.com.pragma.api.dto.CapabilityExistenceInDto;
+import co.com.pragma.api.dto.CapabilityExistenceOutDto;
 import co.com.pragma.api.dto.CapabilityInDto;
 import co.com.pragma.api.mapper.CapabilityDtoMapper;
 import co.com.pragma.model.capability.query.CapabilityListQuery;
+import co.com.pragma.usecase.checkcapabilitiesexistence.CheckCapabilitiesExistenceUseCase;
 import co.com.pragma.usecase.listcapabilities.ListCapabilitiesUseCase;
 import co.com.pragma.usecase.registercapability.RegisterCapabilityUseCase;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class Handler implements IHandlerDocs {
 
     private final RegisterCapabilityUseCase registerCapabilityUseCase;
     private final ListCapabilitiesUseCase listCapabilitiesUseCase;
+    private final CheckCapabilitiesExistenceUseCase checkCapabilitiesExistenceUseCase;
     private final CapabilityDtoMapper capabilityDtoMapper;
 
     @Override
@@ -46,6 +50,15 @@ public class Handler implements IHandlerDocs {
 
         return listCapabilitiesUseCase.execute(query)
                 .map(capabilityDtoMapper::toCapabilityPageOutDto)
+                .flatMap(response -> ServerResponse.status(HttpStatus.OK).bodyValue(response));
+    }
+
+    @Override
+    public Mono<ServerResponse> listenCheckCapabilitiesExistence(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(CapabilityExistenceInDto.class)
+                .defaultIfEmpty(new CapabilityExistenceInDto(null))
+                .flatMap(dto -> checkCapabilitiesExistenceUseCase.execute(dto.capabilityIds()))
+                .map(CapabilityExistenceOutDto::new)
                 .flatMap(response -> ServerResponse.status(HttpStatus.OK).bodyValue(response));
     }
 }

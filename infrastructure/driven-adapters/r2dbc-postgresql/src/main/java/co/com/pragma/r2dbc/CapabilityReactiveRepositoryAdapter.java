@@ -81,4 +81,15 @@ public class CapabilityReactiveRepositoryAdapter extends ReactiveAdapterOperatio
         Query completeOnly = Query.query(Criteria.where(STATUS_COLUMN).is(CapabilityReactiveRepository.COMPLETE_STATUS));
         return template.count(completeOnly, CapabilityEntity.class);
     }
+
+    @Override
+    public Mono<List<Long>> findMissingIds(List<Long> capabilityIds) {
+        return repository.findAllById(capabilityIds)
+                .map(CapabilityEntity::getId)
+                .collectList()
+                .map(existingIds -> capabilityIds.stream()
+                        .distinct()
+                        .filter(id -> !existingIds.contains(id))
+                        .toList());
+    }
 }

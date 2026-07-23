@@ -16,4 +16,6 @@ public interface CapabilityRepository {
     Mono<List<Capability>> findPage(int page, int size, CapabilitySortFieldEnum sortField, SortDirectionEnum direction);
 
     Mono<Long> count();
+
+    Mono<List<Long>> findMissingIds(List<Long> capabilityIds);
 }
