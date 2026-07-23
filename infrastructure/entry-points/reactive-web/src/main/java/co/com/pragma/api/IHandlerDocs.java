@@ -1,5 +1,6 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.constants.PathVariableConstants;
 import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.BootcampCapabilityLinkInDto;
 import co.com.pragma.api.dto.BootcampCapabilityLinkOutDto;
@@ -314,4 +315,37 @@ public interface IHandlerDocs {
                                     """)))
     })
     Mono<ServerResponse> listenLinkBootcampCapabilities(ServerRequest serverRequest);
+
+    @Operation(
+            operationId = "listenDeleteBootcampCapabilities",
+            summary = "Delete all capability links for a bootcamp",
+            description = "Removes every bootcamp-capability relation for the given bootcamp id. "
+                    + "Used to clean up an incomplete previous registration attempt before retrying.",
+            tags = { "Capabilities" },
+            parameters = @Parameter(name = PathVariableConstants.BOOTCAMP_ID, in = ParameterIn.PATH, required = true,
+                    schema = @Schema(type = "integer", format = "int64")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "No Content"),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "Business validation failed",
+                                      "errors": [
+                                        {
+                                          "field": "bootcampId",
+                                          "message": "Bootcamp id must be numeric"
+                                        }
+                                      ]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "An unexpected error occurred. Please contact the administrator."
+                                    }
+                                    """)))
+    })
+    Mono<ServerResponse> listenDeleteBootcampCapabilities(ServerRequest serverRequest);
 }

@@ -1,5 +1,6 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.constants.PathVariableConstants;
 import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.BootcampCapabilityLinkInDto;
 import co.com.pragma.api.dto.CapabilityExistenceInDto;
@@ -9,6 +10,7 @@ import co.com.pragma.api.mapper.BootcampCapabilityDtoMapper;
 import co.com.pragma.api.mapper.CapabilityDtoMapper;
 import co.com.pragma.model.capability.query.CapabilityListQuery;
 import co.com.pragma.usecase.checkcapabilitiesexistence.CheckCapabilitiesExistenceUseCase;
+import co.com.pragma.usecase.deletebootcampcapabilities.DeleteBootcampCapabilitiesUseCase;
 import co.com.pragma.usecase.linkbootcampcapabilities.LinkBootcampCapabilitiesUseCase;
 import co.com.pragma.usecase.listcapabilities.ListCapabilitiesUseCase;
 import co.com.pragma.usecase.registercapability.RegisterCapabilityUseCase;
@@ -32,6 +34,7 @@ public class Handler implements IHandlerDocs {
     private final ListCapabilitiesUseCase listCapabilitiesUseCase;
     private final CheckCapabilitiesExistenceUseCase checkCapabilitiesExistenceUseCase;
     private final LinkBootcampCapabilitiesUseCase linkBootcampCapabilitiesUseCase;
+    private final DeleteBootcampCapabilitiesUseCase deleteBootcampCapabilitiesUseCase;
     private final CapabilityDtoMapper capabilityDtoMapper;
     private final BootcampCapabilityDtoMapper bootcampCapabilityDtoMapper;
 
@@ -75,5 +78,12 @@ public class Handler implements IHandlerDocs {
                 .flatMap(linkBootcampCapabilitiesUseCase::execute)
                 .map(bootcampCapabilityDtoMapper::toBootcampCapabilityLinkOutDto)
                 .flatMap(response -> ServerResponse.status(HttpStatus.CREATED).bodyValue(response));
+    }
+
+    @Override
+    public Mono<ServerResponse> listenDeleteBootcampCapabilities(ServerRequest serverRequest) {
+        return Mono.just(serverRequest.pathVariable(PathVariableConstants.BOOTCAMP_ID))
+                .flatMap(deleteBootcampCapabilitiesUseCase::execute)
+                .then(ServerResponse.noContent().build());
     }
 }

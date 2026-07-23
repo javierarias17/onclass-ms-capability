@@ -17,4 +17,6 @@ public interface CapabilityBootcampReactiveRepository extends
             + "RETURNING *")
     Mono<CapabilityBootcampEntity> insertIgnoringConflict(@Param("bootcampId") Long bootcampId,
             @Param("capabilityId") Long capabilityId);
+
+    Mono<Void> deleteByBootcampId(Long bootcampId);
 }

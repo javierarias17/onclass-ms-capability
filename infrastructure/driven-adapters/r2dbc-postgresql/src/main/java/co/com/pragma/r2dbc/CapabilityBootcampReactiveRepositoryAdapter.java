@@ -36,4 +36,9 @@ public class CapabilityBootcampReactiveRepositoryAdapter extends
                                 .build()))
                 .collectList();
     }
+
+    @Override
+    public Mono<Void> deleteByBootcampId(Long bootcampId) {
+        return repository.deleteByBootcampId(bootcampId);
+    }
 }
