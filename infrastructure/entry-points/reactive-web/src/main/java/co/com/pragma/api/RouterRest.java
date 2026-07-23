@@ -21,11 +21,14 @@ public class RouterRest {
             @RouterOperation(path = "/api/v1/capabilities", method = {
                     RequestMethod.GET }, beanClass = Handler.class, beanMethod = "listenListCapabilities"),
             @RouterOperation(path = "/api/v1/capabilities/existence-check", method = {
-                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenCheckCapabilitiesExistence")
+                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenCheckCapabilitiesExistence"),
+            @RouterOperation(path = "/api/v1/bootcamp-capabilities", method = {
+                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenLinkBootcampCapabilities")
     })
     public RouterFunction<ServerResponse> capabilityRouterFunction(Handler handler) {
         return route(POST("/api/v1/capabilities"), handler::listenRegisterCapability)
                 .andRoute(GET("/api/v1/capabilities"), handler::listenListCapabilities)
-                .andRoute(POST("/api/v1/capabilities/existence-check"), handler::listenCheckCapabilitiesExistence);
+                .andRoute(POST("/api/v1/capabilities/existence-check"), handler::listenCheckCapabilitiesExistence)
+                .andRoute(POST("/api/v1/bootcamp-capabilities"), handler::listenLinkBootcampCapabilities);
     }
 }

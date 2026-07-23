@@ -12,3 +12,10 @@ CREATE TABLE IF NOT EXISTS onclass_capability.capabilities (
 
 CREATE UNIQUE INDEX IF NOT EXISTS capabilities_name_lower_unique_idx
     ON onclass_capability.capabilities (LOWER(name));
+
+CREATE TABLE IF NOT EXISTS onclass_capability.capability_bootcamps (
+    id            BIGSERIAL PRIMARY KEY,
+    bootcamp_id   BIGINT NOT NULL,
+    capability_id BIGINT NOT NULL REFERENCES onclass_capability.capabilities(id),
+    UNIQUE (bootcamp_id, capability_id)
+);

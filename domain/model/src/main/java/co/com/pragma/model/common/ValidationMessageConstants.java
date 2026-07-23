@@ -14,6 +14,9 @@ public final class ValidationMessageConstants {
     public static final String MSG_TECHNOLOGY_IDS_MAX_SIZE = "Capability must have at most %d technologies";
     public static final String MSG_TECHNOLOGY_IDS_DUPLICATED = "Capability technology ids must not contain duplicates";
     public static final String MSG_CAPABILITY_IDS_REQUIRED = "Capability ids list is required and must not be empty";
+    public static final String MSG_CAPABILITY_IDS_SIZE_RANGE = "Bootcamp must have between %d and %d capabilities";
+    public static final String MSG_CAPABILITY_IDS_DUPLICATED = "Bootcamp capability ids must not contain duplicates";
+    public static final String MSG_BOOTCAMP_ID_REQUIRED = "Bootcamp id is required";
     public static final String MSG_PAGE_MUST_BE_NUMERIC = "Page must be numeric";
     public static final String MSG_PAGE_OUT_OF_RANGE = "Page must be zero or greater";
     public static final String MSG_SIZE_MUST_BE_NUMERIC = "Size must be numeric";

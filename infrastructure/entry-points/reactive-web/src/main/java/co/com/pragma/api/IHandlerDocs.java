@@ -1,6 +1,8 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.constants.QueryParamConstants;
+import co.com.pragma.api.dto.BootcampCapabilityLinkInDto;
+import co.com.pragma.api.dto.BootcampCapabilityLinkOutDto;
 import co.com.pragma.api.dto.CapabilityExistenceInDto;
 import co.com.pragma.api.dto.CapabilityExistenceOutDto;
 import co.com.pragma.api.dto.CapabilityInDto;
@@ -224,4 +226,92 @@ public interface IHandlerDocs {
                                     """)))
     })
     Mono<ServerResponse> listenCheckCapabilitiesExistence(ServerRequest serverRequest);
+
+    @Operation(
+            operationId = "listenLinkBootcampCapabilities",
+            summary = "Link capabilities to a bootcamp",
+            description = "Persists the relation between a bootcamp and its capabilities. A bootcamp must have between 1 and 4 capabilities, all must exist and ids must not be duplicated.",
+            tags = { "Capabilities" },
+            requestBody = @RequestBody(
+                    description = "Input data",
+                    required = true,
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BootcampCapabilityLinkInDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "bootcampId": 10,
+                                      "capabilityIds": [1, 2, 3]
+                                    }
+                                    """))))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BootcampCapabilityLinkOutDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "bootcampId": 10,
+                                      "capabilityIds": [1, 2, 3]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "Invalid input", value = """
+                                            {
+                                              "message": "Business validation failed",
+                                              "errors": [
+                                                {
+                                                  "field": "bootcampId",
+                                                  "message": "Bootcamp id is required"
+                                                },
+                                                {
+                                                  "field": "capabilityIds",
+                                                  "message": "Bootcamp must have between 1 and 4 capabilities"
+                                                }
+                                              ]
+                                            }
+                                            """),
+                                    @ExampleObject(name = "Too many capabilities", value = """
+                                            {
+                                              "message": "Business validation failed",
+                                              "errors": [
+                                                {
+                                                  "field": "capabilityIds",
+                                                  "message": "Bootcamp must have between 1 and 4 capabilities"
+                                                }
+                                              ]
+                                            }
+                                            """),
+                                    @ExampleObject(name = "Duplicated capability ids", value = """
+                                            {
+                                              "message": "Business validation failed",
+                                              "errors": [
+                                                {
+                                                  "field": "capabilityIds",
+                                                  "message": "Bootcamp capability ids must not contain duplicates"
+                                                }
+                                              ]
+                                            }
+                                            """),
+                                    @ExampleObject(name = "Capabilities not found", value = """
+                                            {
+                                              "message": "Business validation failed",
+                                              "errors": [
+                                                {
+                                                  "field": "capabilityIds",
+                                                  "message": "The following capability ids do not exist: [99]"
+                                                }
+                                              ]
+                                            }
+                                            """)
+                            })),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "An unexpected error occurred. Please contact the administrator."
+                                    }
+                                    """)))
+    })
+    Mono<ServerResponse> listenLinkBootcampCapabilities(ServerRequest serverRequest);
 }

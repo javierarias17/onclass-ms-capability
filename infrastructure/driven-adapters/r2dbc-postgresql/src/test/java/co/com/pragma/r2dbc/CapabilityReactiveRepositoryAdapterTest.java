@@ -160,6 +160,48 @@ class CapabilityReactiveRepositoryAdapterTest {
         assertEquals(CapabilityReactiveRepository.COMPLETE_STATUS, criteria.getValue());
     }
 
+    @Test
+    void When_AllCapabilityIdsExistAndComplete_Expect_EmptyMissingIdsList() {
+        // Arrange
+        List<Long> capabilityIds = List.of(1L, 2L);
+
+        when(repository.findCompleteIds(capabilityIds)).thenReturn(Flux.just(1L, 2L));
+
+        // Act & Assert
+        StepVerifier.create(adapter.findMissingIds(capabilityIds))
+                .expectNextMatches(List::isEmpty)
+                .verifyComplete();
+    }
+
+    @Test
+    void When_SomeCapabilityIdsDoNotExist_Expect_MissingIdsListToBeReturned() {
+        // Arrange
+        List<Long> capabilityIds = List.of(1L, 2L, 99L);
+
+        when(repository.findCompleteIds(capabilityIds)).thenReturn(Flux.just(1L, 2L));
+
+        // Act & Assert
+        StepVerifier.create(adapter.findMissingIds(capabilityIds))
+                .expectNextMatches(missingIds -> missingIds.equals(List.of(99L)))
+                .verifyComplete();
+    }
+
+    @Test
+    void When_CapabilityIsStillPending_Expect_ItToBeTreatedAsMissing() {
+        // Arrange: la capacidad existe en la tabla pero su saga de registro no terminó
+        // (nunca se confirmó el vínculo con tecnologías), así que no debe ser referenciable.
+        // findCompleteIds ya filtra por status = COMPLETE en la query, por lo que el id 2
+        // (PENDING) simplemente no aparece en el resultado.
+        List<Long> capabilityIds = List.of(1L, 2L);
+
+        when(repository.findCompleteIds(capabilityIds)).thenReturn(Flux.just(1L));
+
+        // Act & Assert
+        StepVerifier.create(adapter.findMissingIds(capabilityIds))
+                .expectNextMatches(missingIds -> missingIds.equals(List.of(2L)))
+                .verifyComplete();
+    }
+
     private static Class<CapabilityEntity> eqCapabilityEntityClass() {
         return org.mockito.ArgumentMatchers.eq(CapabilityEntity.class);
     }

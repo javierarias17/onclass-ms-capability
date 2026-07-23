@@ -1,12 +1,15 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.constants.QueryParamConstants;
+import co.com.pragma.api.dto.BootcampCapabilityLinkInDto;
 import co.com.pragma.api.dto.CapabilityExistenceInDto;
 import co.com.pragma.api.dto.CapabilityExistenceOutDto;
 import co.com.pragma.api.dto.CapabilityInDto;
+import co.com.pragma.api.mapper.BootcampCapabilityDtoMapper;
 import co.com.pragma.api.mapper.CapabilityDtoMapper;
 import co.com.pragma.model.capability.query.CapabilityListQuery;
 import co.com.pragma.usecase.checkcapabilitiesexistence.CheckCapabilitiesExistenceUseCase;
+import co.com.pragma.usecase.linkbootcampcapabilities.LinkBootcampCapabilitiesUseCase;
 import co.com.pragma.usecase.listcapabilities.ListCapabilitiesUseCase;
 import co.com.pragma.usecase.registercapability.RegisterCapabilityUseCase;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +31,9 @@ public class Handler implements IHandlerDocs {
     private final RegisterCapabilityUseCase registerCapabilityUseCase;
     private final ListCapabilitiesUseCase listCapabilitiesUseCase;
     private final CheckCapabilitiesExistenceUseCase checkCapabilitiesExistenceUseCase;
+    private final LinkBootcampCapabilitiesUseCase linkBootcampCapabilitiesUseCase;
     private final CapabilityDtoMapper capabilityDtoMapper;
+    private final BootcampCapabilityDtoMapper bootcampCapabilityDtoMapper;
 
     @Override
     public Mono<ServerResponse> listenRegisterCapability(ServerRequest serverRequest) {
@@ -60,5 +65,15 @@ public class Handler implements IHandlerDocs {
                 .flatMap(dto -> checkCapabilitiesExistenceUseCase.execute(dto.capabilityIds()))
                 .map(CapabilityExistenceOutDto::new)
                 .flatMap(response -> ServerResponse.status(HttpStatus.OK).bodyValue(response));
+    }
+
+    @Override
+    public Mono<ServerResponse> listenLinkBootcampCapabilities(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(BootcampCapabilityLinkInDto.class)
+                .defaultIfEmpty(new BootcampCapabilityLinkInDto(null, null))
+                .map(bootcampCapabilityDtoMapper::toLinkBootcampCapabilitiesCommand)
+                .flatMap(linkBootcampCapabilitiesUseCase::execute)
+                .map(bootcampCapabilityDtoMapper::toBootcampCapabilityLinkOutDto)
+                .flatMap(response -> ServerResponse.status(HttpStatus.CREATED).bodyValue(response));
     }
 }

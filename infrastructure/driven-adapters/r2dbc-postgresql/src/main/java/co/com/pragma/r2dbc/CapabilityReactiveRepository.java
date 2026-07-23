@@ -8,6 +8,8 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface CapabilityReactiveRepository extends
         ReactiveCrudRepository<CapabilityEntity, Long>,
         ReactiveQueryByExampleExecutor<CapabilityEntity> {
@@ -15,6 +17,9 @@ public interface CapabilityReactiveRepository extends
     String COMPLETE_STATUS = "COMPLETE";
 
     Mono<CapabilityEntity> findByNameIgnoreCase(String name);
+
+    @Query("SELECT id FROM capabilities WHERE id IN (:capabilityIds) AND status = '" + COMPLETE_STATUS + "'")
+    Flux<Long> findCompleteIds(@Param("capabilityIds") List<Long> capabilityIds);
 
     @Query("SELECT * FROM capabilities WHERE status = '" + COMPLETE_STATUS
             + "' ORDER BY LOWER(name) ASC LIMIT :size OFFSET :offset")

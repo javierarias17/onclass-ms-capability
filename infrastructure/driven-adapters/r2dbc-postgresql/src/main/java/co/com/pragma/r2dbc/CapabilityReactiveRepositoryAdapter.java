@@ -84,8 +84,7 @@ public class CapabilityReactiveRepositoryAdapter extends ReactiveAdapterOperatio
 
     @Override
     public Mono<List<Long>> findMissingIds(List<Long> capabilityIds) {
-        return repository.findAllById(capabilityIds)
-                .map(CapabilityEntity::getId)
+        return repository.findCompleteIds(capabilityIds)
                 .collectList()
                 .map(existingIds -> capabilityIds.stream()
                         .distinct()
