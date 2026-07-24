@@ -5,7 +5,10 @@ import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 public interface CapabilityBootcampReactiveRepository extends
         ReactiveCrudRepository<CapabilityBootcampEntity, Long>,
@@ -19,4 +22,6 @@ public interface CapabilityBootcampReactiveRepository extends
             @Param("capabilityId") Long capabilityId);
 
     Mono<Void> deleteByBootcampId(Long bootcampId);
+
+    Flux<CapabilityBootcampEntity> findByBootcampIdIn(List<Long> bootcampIds);
 }

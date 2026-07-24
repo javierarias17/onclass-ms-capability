@@ -36,4 +36,7 @@ public interface CapabilityReactiveRepository extends
     @Query("SELECT * FROM capabilities WHERE status = '" + COMPLETE_STATUS
             + "' ORDER BY technology_count DESC LIMIT :size OFFSET :offset")
     Flux<CapabilityEntity> findPageByTechnologyCountDesc(@Param("size") int size, @Param("offset") long offset);
+
+    @Query("SELECT * FROM capabilities WHERE id IN (:capabilityIds) AND status = '" + COMPLETE_STATUS + "'")
+    Flux<CapabilityEntity> findByIdIn(@Param("capabilityIds") List<Long> capabilityIds);
 }

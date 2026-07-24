@@ -4,6 +4,8 @@ import co.com.pragma.api.constants.PathVariableConstants;
 import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.BootcampCapabilityLinkInDto;
 import co.com.pragma.api.dto.BootcampCapabilityLinkOutDto;
+import co.com.pragma.api.dto.CapabilitiesByBootcampInDto;
+import co.com.pragma.api.dto.CapabilitiesByBootcampOutDto;
 import co.com.pragma.api.dto.CapabilityExistenceInDto;
 import co.com.pragma.api.dto.CapabilityExistenceOutDto;
 import co.com.pragma.api.dto.CapabilityInDto;
@@ -348,4 +350,74 @@ public interface IHandlerDocs {
                                     """)))
     })
     Mono<ServerResponse> listenDeleteBootcampCapabilities(ServerRequest serverRequest);
+
+    @Operation(
+            operationId = "listenFindCapabilitiesByBootcampIds",
+            summary = "Find capabilities by bootcamp ids",
+            description = "Given a list of bootcamp ids, returns for each one its associated capabilities, "
+                    + "each capability including its own technologies (id and name only). Bootcamp ids "
+                    + "without capabilities are omitted from the response.",
+            tags = { "Capabilities" },
+            requestBody = @RequestBody(
+                    description = "Input data",
+                    required = true,
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CapabilitiesByBootcampInDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "bootcampIds": [10, 11]
+                                    }
+                                    """))))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CapabilitiesByBootcampOutDto.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "bootcamps": [
+                                        {
+                                          "bootcampId": 10,
+                                          "capabilities": [
+                                            {
+                                              "id": 1,
+                                              "name": "Backend",
+                                              "technologies": [
+                                                { "id": 10, "name": "Java" },
+                                                { "id": 11, "name": "Spring" }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "Business validation failed",
+                                      "errors": [
+                                        {
+                                          "field": "bootcampIds",
+                                          "message": "Bootcamp ids list is required and must not be empty"
+                                        }
+                                      ]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "An unexpected error occurred. Please contact the administrator."
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "The service is temporarily unavailable. Please try again shortly."
+                                    }
+                                    """)))
+    })
+    Mono<ServerResponse> listenFindCapabilitiesByBootcampIds(ServerRequest serverRequest);
 }

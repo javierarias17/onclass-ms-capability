@@ -202,6 +202,26 @@ class CapabilityReactiveRepositoryAdapterTest {
                 .verifyComplete();
     }
 
+    @Test
+    void When_FindingCapabilitiesByIds_Expect_MatchingDomainCapabilitiesReturned() {
+        // Arrange
+        List<Long> capabilityIds = List.of(CAPABILITY_ID);
+        CapabilityEntity entity = new CapabilityEntity(CAPABILITY_ID, VALID_NAME, VALID_DESCRIPTION,
+                CapabilityStatusEnum.COMPLETE.name(), TECHNOLOGY_COUNT, null);
+        Capability capability = Capability.builder()
+                .id(CAPABILITY_ID).name(VALID_NAME).description(VALID_DESCRIPTION)
+                .status(CapabilityStatusEnum.COMPLETE).technologyCount(TECHNOLOGY_COUNT).build();
+
+        when(repository.findByIdIn(capabilityIds)).thenReturn(Flux.just(entity));
+        when(capabilityEntityMapper.toDomain(entity)).thenReturn(capability);
+
+        // Act & Assert
+        StepVerifier.create(adapter.findByIds(capabilityIds))
+                .expectNextMatches(capabilities -> capabilities.size() == 1
+                        && capabilities.get(0).getId().equals(CAPABILITY_ID))
+                .verifyComplete();
+    }
+
     private static Class<CapabilityEntity> eqCapabilityEntityClass() {
         return org.mockito.ArgumentMatchers.eq(CapabilityEntity.class);
     }

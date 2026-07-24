@@ -41,4 +41,11 @@ public class CapabilityBootcampReactiveRepositoryAdapter extends
     public Mono<Void> deleteByBootcampId(Long bootcampId) {
         return repository.deleteByBootcampId(bootcampId);
     }
+
+    @Override
+    public Mono<List<CapabilityBootcamp>> findByBootcampIds(List<Long> bootcampIds) {
+        return repository.findByBootcampIdIn(bootcampIds)
+                .map(this::toEntity)
+                .collectList();
+    }
 }

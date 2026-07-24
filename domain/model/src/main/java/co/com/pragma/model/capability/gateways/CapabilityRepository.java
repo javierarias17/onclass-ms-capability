@@ -18,4 +18,6 @@ public interface CapabilityRepository {
     Mono<Long> count();
 
     Mono<List<Long>> findMissingIds(List<Long> capabilityIds);
+
+    Mono<List<Capability>> findByIds(List<Long> capabilityIds);
 }

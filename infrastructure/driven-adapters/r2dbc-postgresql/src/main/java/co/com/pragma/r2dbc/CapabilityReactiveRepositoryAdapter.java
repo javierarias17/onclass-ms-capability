@@ -95,4 +95,11 @@ public class CapabilityReactiveRepositoryAdapter extends ReactiveAdapterOperatio
                         .filter(id -> !existingIds.contains(id))
                         .toList());
     }
+
+    @Override
+    public Mono<List<Capability>> findByIds(List<Long> capabilityIds) {
+        return repository.findByIdIn(capabilityIds)
+                .map(this::toEntity)
+                .collectList();
+    }
 }

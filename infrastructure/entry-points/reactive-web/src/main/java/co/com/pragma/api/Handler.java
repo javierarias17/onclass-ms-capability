@@ -3,6 +3,7 @@ package co.com.pragma.api;
 import co.com.pragma.api.constants.PathVariableConstants;
 import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.BootcampCapabilityLinkInDto;
+import co.com.pragma.api.dto.CapabilitiesByBootcampInDto;
 import co.com.pragma.api.dto.CapabilityExistenceInDto;
 import co.com.pragma.api.dto.CapabilityExistenceOutDto;
 import co.com.pragma.api.dto.CapabilityInDto;
@@ -11,6 +12,7 @@ import co.com.pragma.api.mapper.CapabilityDtoMapper;
 import co.com.pragma.model.capability.query.CapabilityListQuery;
 import co.com.pragma.usecase.checkcapabilitiesexistence.CheckCapabilitiesExistenceUseCase;
 import co.com.pragma.usecase.deletebootcampcapabilities.DeleteBootcampCapabilitiesUseCase;
+import co.com.pragma.usecase.findcapabilitiesbybootcampids.FindCapabilitiesByBootcampIdsUseCase;
 import co.com.pragma.usecase.linkbootcampcapabilities.LinkBootcampCapabilitiesUseCase;
 import co.com.pragma.usecase.listcapabilities.ListCapabilitiesUseCase;
 import co.com.pragma.usecase.registercapability.RegisterCapabilityUseCase;
@@ -35,6 +37,7 @@ public class Handler implements IHandlerDocs {
     private final CheckCapabilitiesExistenceUseCase checkCapabilitiesExistenceUseCase;
     private final LinkBootcampCapabilitiesUseCase linkBootcampCapabilitiesUseCase;
     private final DeleteBootcampCapabilitiesUseCase deleteBootcampCapabilitiesUseCase;
+    private final FindCapabilitiesByBootcampIdsUseCase findCapabilitiesByBootcampIdsUseCase;
     private final CapabilityDtoMapper capabilityDtoMapper;
     private final BootcampCapabilityDtoMapper bootcampCapabilityDtoMapper;
 
@@ -85,5 +88,14 @@ public class Handler implements IHandlerDocs {
         return Mono.just(serverRequest.pathVariable(PathVariableConstants.BOOTCAMP_ID))
                 .flatMap(deleteBootcampCapabilitiesUseCase::execute)
                 .then(ServerResponse.noContent().build());
+    }
+
+    @Override
+    public Mono<ServerResponse> listenFindCapabilitiesByBootcampIds(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(CapabilitiesByBootcampInDto.class)
+                .defaultIfEmpty(new CapabilitiesByBootcampInDto(null))
+                .flatMap(dto -> findCapabilitiesByBootcampIdsUseCase.execute(dto.bootcampIds()))
+                .map(bootcampCapabilityDtoMapper::toCapabilitiesByBootcampOutDto)
+                .flatMap(response -> ServerResponse.status(HttpStatus.OK).bodyValue(response));
     }
 }

@@ -22,6 +22,8 @@ public class RouterRest {
     private static final String BOOTCAMP_CAPABILITIES_PATH = "/api/v1/bootcamp-capabilities";
     private static final String BOOTCAMP_CAPABILITIES_BY_ID_PATH = BOOTCAMP_CAPABILITIES_PATH
             + "/{" + PathVariableConstants.BOOTCAMP_ID + "}";
+    private static final String BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH = BOOTCAMP_CAPABILITIES_PATH
+            + "/by-bootcamp-ids";
 
     @Bean
     @RouterOperations({
@@ -34,13 +36,16 @@ public class RouterRest {
             @RouterOperation(path = BOOTCAMP_CAPABILITIES_PATH, method = {
                     RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenLinkBootcampCapabilities"),
             @RouterOperation(path = BOOTCAMP_CAPABILITIES_BY_ID_PATH, method = {
-                    RequestMethod.DELETE }, beanClass = Handler.class, beanMethod = "listenDeleteBootcampCapabilities")
+                    RequestMethod.DELETE }, beanClass = Handler.class, beanMethod = "listenDeleteBootcampCapabilities"),
+            @RouterOperation(path = BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH, method = {
+                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenFindCapabilitiesByBootcampIds")
     })
     public RouterFunction<ServerResponse> capabilityRouterFunction(Handler handler) {
         return route(POST(CAPABILITIES_PATH), handler::listenRegisterCapability)
                 .andRoute(GET(CAPABILITIES_PATH), handler::listenListCapabilities)
                 .andRoute(POST(CAPABILITIES_EXISTENCE_CHECK_PATH), handler::listenCheckCapabilitiesExistence)
                 .andRoute(POST(BOOTCAMP_CAPABILITIES_PATH), handler::listenLinkBootcampCapabilities)
-                .andRoute(DELETE(BOOTCAMP_CAPABILITIES_BY_ID_PATH), handler::listenDeleteBootcampCapabilities);
+                .andRoute(DELETE(BOOTCAMP_CAPABILITIES_BY_ID_PATH), handler::listenDeleteBootcampCapabilities)
+                .andRoute(POST(BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH), handler::listenFindCapabilitiesByBootcampIds);
     }
 }

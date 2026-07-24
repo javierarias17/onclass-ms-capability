@@ -10,4 +10,6 @@ public interface CapabilityBootcampRepository {
     Mono<List<CapabilityBootcamp>> saveAll(LinkBootcampCapabilities linkBootcampCapabilities);
 
     Mono<Void> deleteByBootcampId(Long bootcampId);
+
+    Mono<List<CapabilityBootcamp>> findByBootcampIds(List<Long> bootcampIds);
 }
