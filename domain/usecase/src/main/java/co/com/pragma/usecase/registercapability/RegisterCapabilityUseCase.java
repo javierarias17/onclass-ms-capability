@@ -22,6 +22,8 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class RegisterCapabilityUseCase {
 
+    private static final int NO_TECHNOLOGIES_LINKED_YET = 0;
+
     private final CapabilityRepository capabilityRepository;
     private final TechnologyGateway technologyGateway;
 
@@ -33,7 +35,7 @@ public class RegisterCapabilityUseCase {
 
         return capabilityRepository.findByName(command.name())
                 .flatMap(existingCapability -> resumeOrReject(existingCapability, command))
-                .switchIfEmpty(Mono.defer(() -> registerAndLink(null, command)));
+                .switchIfEmpty(Mono.defer(() -> registerAndLink(null, null, command)));
     }
 
     private Mono<Capability> resumeOrReject(Capability existingCapability, CapabilityCreateCommand command) {
@@ -42,17 +44,19 @@ public class RegisterCapabilityUseCase {
                     FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
                     Map.of(FieldConstants.NAME, FunctionalMessageConstants.CAPABILITY_ALREADY_EXISTS)));
 
-        return registerAndLink(existingCapability.getId(), command);
+        return registerAndLink(existingCapability.getId(), existingCapability.getVersion(), command);
     }
 
-    private Mono<Capability> registerAndLink(Long capabilityId, CapabilityCreateCommand command) {
+    private Mono<Capability> registerAndLink(Long capabilityId, Long version, CapabilityCreateCommand command) {
         return technologyGateway.checkTechnologiesExistence(command.technologyIds())
                 .flatMap(missingIds -> missingIds.isEmpty()
                         ? capabilityRepository.save(Capability.builder()
                                 .id(capabilityId)
+                                .version(version)
                                 .name(command.name())
                                 .description(command.description())
                                 .status(CapabilityStatusEnum.PENDING)
+                                .technologyCount(NO_TECHNOLOGIES_LINKED_YET)
                                 .build())
                         : Mono.error(new TechnologiesNotFoundException(
                                 FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
@@ -62,6 +66,7 @@ public class RegisterCapabilityUseCase {
                         .then(Mono.defer(() -> technologyGateway.linkCapabilityTechnologies(savedCapability.getId(), command.technologyIds())))
                         .then(Mono.defer(() -> capabilityRepository.save(Capability.builder()
                                 .id(savedCapability.getId())
+                                .version(savedCapability.getVersion())
                                 .name(savedCapability.getName().value())
                                 .description(savedCapability.getDescription().value())
                                 .status(CapabilityStatusEnum.COMPLETE)

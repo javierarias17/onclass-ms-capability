@@ -12,6 +12,7 @@ import co.com.pragma.r2dbc.helper.ReactiveAdapterOperations;
 import co.com.pragma.r2dbc.mapper.CapabilityEntityMapper;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
@@ -52,6 +53,9 @@ public class CapabilityReactiveRepositoryAdapter extends ReactiveAdapterOperatio
     public Mono<Capability> save(Capability capability) {
         return super.save(capability)
                 .onErrorMap(DuplicateKeyException.class, ex -> new CapabilityAlreadyExistsException(
+                        FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
+                        Map.of(FieldConstants.NAME, FunctionalMessageConstants.CAPABILITY_ALREADY_EXISTS)))
+                .onErrorMap(OptimisticLockingFailureException.class, ex -> new CapabilityAlreadyExistsException(
                         FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
                         Map.of(FieldConstants.NAME, FunctionalMessageConstants.CAPABILITY_ALREADY_EXISTS)));
     }

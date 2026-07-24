@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
@@ -21,4 +22,6 @@ public class CapabilityEntity {
     private String description;
     private String status;
     private Integer technologyCount;
+    @Version
+    private Long version;
 }

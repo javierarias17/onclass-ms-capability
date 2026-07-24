@@ -23,6 +23,7 @@ public interface CapabilityEntityMapper {
                         .description(entity.getDescription())
                         .status(CapabilityStatusEnum.valueOf(entity.getStatus()))
                         .technologyCount(entity.getTechnologyCount())
+                        .version(entity.getVersion())
                         .build();
     }
 }

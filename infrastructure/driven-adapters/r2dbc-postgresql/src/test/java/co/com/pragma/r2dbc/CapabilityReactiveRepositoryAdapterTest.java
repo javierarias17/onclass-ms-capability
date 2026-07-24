@@ -74,7 +74,7 @@ class CapabilityReactiveRepositoryAdapterTest {
                 .status(CapabilityStatusEnum.PENDING)
                 .build();
         CapabilityEntity entity = new CapabilityEntity(null, VALID_NAME, VALID_DESCRIPTION,
-                CapabilityStatusEnum.PENDING.name(), NO_TECHNOLOGIES_YET);
+                CapabilityStatusEnum.PENDING.name(), NO_TECHNOLOGIES_YET, null);
 
         when(capabilityEntityMapper.toEntity(capability)).thenReturn(entity);
         when(repository.save(entity)).thenReturn(Mono.error(
@@ -90,7 +90,7 @@ class CapabilityReactiveRepositoryAdapterTest {
     void Expect_FindPageByNameAsc_When_SortingByNameAscending() {
         // Arrange
         CapabilityEntity entity = new CapabilityEntity(CAPABILITY_ID, VALID_NAME, VALID_DESCRIPTION,
-                CapabilityStatusEnum.COMPLETE.name(), TECHNOLOGY_COUNT);
+                CapabilityStatusEnum.COMPLETE.name(), TECHNOLOGY_COUNT, null);
         Capability capability = Capability.builder()
                 .id(CAPABILITY_ID).name(VALID_NAME).description(VALID_DESCRIPTION)
                 .status(CapabilityStatusEnum.COMPLETE).technologyCount(TECHNOLOGY_COUNT).build();
