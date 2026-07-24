@@ -16,24 +16,31 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 public class RouterRest {
+
+    private static final String CAPABILITIES_PATH = "/api/v1/capabilities";
+    private static final String CAPABILITIES_EXISTENCE_CHECK_PATH = CAPABILITIES_PATH + "/existence-check";
+    private static final String BOOTCAMP_CAPABILITIES_PATH = "/api/v1/bootcamp-capabilities";
+    private static final String BOOTCAMP_CAPABILITIES_BY_ID_PATH = BOOTCAMP_CAPABILITIES_PATH
+            + "/{" + PathVariableConstants.BOOTCAMP_ID + "}";
+
     @Bean
     @RouterOperations({
-            @RouterOperation(path = "/api/v1/capabilities", method = {
+            @RouterOperation(path = CAPABILITIES_PATH, method = {
                     RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenRegisterCapability"),
-            @RouterOperation(path = "/api/v1/capabilities", method = {
+            @RouterOperation(path = CAPABILITIES_PATH, method = {
                     RequestMethod.GET }, beanClass = Handler.class, beanMethod = "listenListCapabilities"),
-            @RouterOperation(path = "/api/v1/capabilities/existence-check", method = {
+            @RouterOperation(path = CAPABILITIES_EXISTENCE_CHECK_PATH, method = {
                     RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenCheckCapabilitiesExistence"),
-            @RouterOperation(path = "/api/v1/bootcamp-capabilities", method = {
+            @RouterOperation(path = BOOTCAMP_CAPABILITIES_PATH, method = {
                     RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenLinkBootcampCapabilities"),
-            @RouterOperation(path = "/api/v1/bootcamp-capabilities/{" + PathVariableConstants.BOOTCAMP_ID + "}", method = {
+            @RouterOperation(path = BOOTCAMP_CAPABILITIES_BY_ID_PATH, method = {
                     RequestMethod.DELETE }, beanClass = Handler.class, beanMethod = "listenDeleteBootcampCapabilities")
     })
     public RouterFunction<ServerResponse> capabilityRouterFunction(Handler handler) {
-        return route(POST("/api/v1/capabilities"), handler::listenRegisterCapability)
-                .andRoute(GET("/api/v1/capabilities"), handler::listenListCapabilities)
-                .andRoute(POST("/api/v1/capabilities/existence-check"), handler::listenCheckCapabilitiesExistence)
-                .andRoute(POST("/api/v1/bootcamp-capabilities"), handler::listenLinkBootcampCapabilities)
-                .andRoute(DELETE("/api/v1/bootcamp-capabilities/{" + PathVariableConstants.BOOTCAMP_ID + "}"), handler::listenDeleteBootcampCapabilities);
+        return route(POST(CAPABILITIES_PATH), handler::listenRegisterCapability)
+                .andRoute(GET(CAPABILITIES_PATH), handler::listenListCapabilities)
+                .andRoute(POST(CAPABILITIES_EXISTENCE_CHECK_PATH), handler::listenCheckCapabilitiesExistence)
+                .andRoute(POST(BOOTCAMP_CAPABILITIES_PATH), handler::listenLinkBootcampCapabilities)
+                .andRoute(DELETE(BOOTCAMP_CAPABILITIES_BY_ID_PATH), handler::listenDeleteBootcampCapabilities);
     }
 }
