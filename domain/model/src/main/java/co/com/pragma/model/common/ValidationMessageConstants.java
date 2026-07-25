@@ -1,5 +1,11 @@
 package co.com.pragma.model.common;
 
+import co.com.pragma.model.capability.query.CapabilitySortFieldEnum;
+import co.com.pragma.model.capability.query.SortDirectionEnum;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public final class ValidationMessageConstants {
 
     private ValidationMessageConstants() {
@@ -23,6 +29,10 @@ public final class ValidationMessageConstants {
     public static final String MSG_PAGE_OUT_OF_RANGE = "Page must be zero or greater";
     public static final String MSG_SIZE_MUST_BE_NUMERIC = "Size must be numeric";
     public static final String MSG_SIZE_OUT_OF_RANGE = "Size must be between %d and %d";
-    public static final String MSG_SORT_BY_INVALID = "Sort field must be one of: name, technologyCount";
-    public static final String MSG_SORT_DIRECTION_INVALID = "Sort direction must be one of: asc, desc";
+    public static final String MSG_SORT_BY_INVALID = "Sort field must be one of: " + allowedNames(CapabilitySortFieldEnum.values());
+    public static final String MSG_SORT_DIRECTION_INVALID = "Sort direction must be one of: " + allowedNames(SortDirectionEnum.values());
+
+    private static String allowedNames(Enum<?>[] values) {
+        return Arrays.stream(values).map(Enum::name).collect(Collectors.joining(", "));
+    }
 }

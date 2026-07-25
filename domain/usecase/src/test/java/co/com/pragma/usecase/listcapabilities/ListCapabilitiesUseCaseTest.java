@@ -40,10 +40,10 @@ class ListCapabilitiesUseCaseTest {
     private static final String SIZE = "10";
     private static final int PAGE_VALUE = 0;
     private static final int SIZE_VALUE = 10;
-    private static final String SORT_BY_NAME = "name";
-    private static final String SORT_BY_TECHNOLOGY_COUNT = "technologyCount";
-    private static final String SORT_DIRECTION_ASC = "asc";
-    private static final String SORT_DIRECTION_DESC = "desc";
+    private static final String SORT_BY_NAME = "NAME";
+    private static final String SORT_BY_TECHNOLOGY_COUNT = "TECHNOLOGY_COUNT";
+    private static final String SORT_DIRECTION_ASC = "ASC";
+    private static final String SORT_DIRECTION_DESC = "DESC";
 
     private static final String BLANK_VALUE = " ";
     private static final String NOT_NUMERIC_VALUE = "abc";
