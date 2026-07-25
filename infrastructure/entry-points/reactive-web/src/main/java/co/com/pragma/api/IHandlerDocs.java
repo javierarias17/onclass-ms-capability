@@ -4,6 +4,8 @@ import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.CapabilityInDto;
 import co.com.pragma.api.dto.CapabilityOutDto;
 import co.com.pragma.api.dto.CapabilityPageOutDto;
+import co.com.pragma.model.capability.query.CapabilitySortFieldEnum;
+import co.com.pragma.model.capability.query.SortDirectionEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -119,9 +121,9 @@ public interface IHandlerDocs {
                     @Parameter(name = QueryParamConstants.SIZE, in = ParameterIn.QUERY, required = false,
                             schema = @Schema(type = "integer", defaultValue = "10")),
                     @Parameter(name = QueryParamConstants.SORT_BY, in = ParameterIn.QUERY, required = false,
-                            schema = @Schema(type = "string", allowableValues = { "name", "technologyCount" }, defaultValue = "name")),
+                            schema = @Schema(implementation = CapabilitySortFieldEnum.class, defaultValue = "NAME")),
                     @Parameter(name = QueryParamConstants.SORT_DIRECTION, in = ParameterIn.QUERY, required = false,
-                            schema = @Schema(type = "string", allowableValues = { "asc", "desc" }, defaultValue = "asc"))
+                            schema = @Schema(implementation = SortDirectionEnum.class, defaultValue = "ASC"))
             })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK",
@@ -154,7 +156,7 @@ public interface IHandlerDocs {
                                       "errors": [
                                         {
                                           "field": "sortBy",
-                                          "message": "Sort field must be one of: name, technologyCount"
+                                          "message": "Sort field must be one of: NAME, TECHNOLOGY_COUNT"
                                         }
                                       ]
                                     }

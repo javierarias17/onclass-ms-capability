@@ -1,9 +1,10 @@
 package co.com.pragma.usecase.listcapabilities;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import co.com.pragma.model.capability.Capability;
 import co.com.pragma.model.capability.query.CapabilityListItem;
@@ -27,10 +28,6 @@ public class ListCapabilitiesUseCase {
     private static final int MIN_PAGE = 0;
     private static final int MIN_SIZE = 1;
     private static final int MAX_SIZE = 100;
-    private static final String SORT_BY_TECHNOLOGY_COUNT = "technologyCount";
-    private static final String SORT_DIRECTION_DESC = "desc";
-    private static final String SORT_BY_NAME= "name";
-    private static final String SORT_DIRECTION_ASC = "asc";
 
     private final CapabilityRepository capabilityRepository;
     private final TechnologyGateway technologyGateway;
@@ -52,12 +49,8 @@ public class ListCapabilitiesUseCase {
         return ValidatedParams.builder()
                 .page(Integer.parseInt(query.page()))
                 .size(Integer.parseInt(query.size()))
-                .sortField(SORT_BY_TECHNOLOGY_COUNT.equals(query.sortBy())
-                        ? CapabilitySortFieldEnum.TECHNOLOGY_COUNT
-                        : CapabilitySortFieldEnum.NAME)
-                .direction(SORT_DIRECTION_DESC.equals(query.sortDirection())
-                        ? SortDirectionEnum.DESC
-                        : SortDirectionEnum.ASC)
+                .sortField(CapabilitySortFieldEnum.valueOf(query.sortBy()))
+                .direction(SortDirectionEnum.valueOf(query.sortDirection()))
                 .build();
     }
 
@@ -96,11 +89,13 @@ public class ListCapabilitiesUseCase {
             FieldValidator.validateIntegerRange(query.size(), MIN_SIZE, MAX_SIZE, FieldConstants.SIZE,
                     String.format(ValidationMessageConstants.MSG_SIZE_OUT_OF_RANGE, MIN_SIZE, MAX_SIZE), errors);
 
-        FieldValidator.validateAllowedValue(query.sortBy(), Set.of(SORT_BY_NAME, SORT_BY_TECHNOLOGY_COUNT), FieldConstants.SORT_BY,
-                ValidationMessageConstants.MSG_SORT_BY_INVALID, errors);
+        FieldValidator.validateAllowedValue(query.sortBy(),
+                Arrays.stream(CapabilitySortFieldEnum.values()).map(Enum::name).collect(Collectors.toSet()),
+                FieldConstants.SORT_BY, ValidationMessageConstants.MSG_SORT_BY_INVALID, errors);
 
-        FieldValidator.validateAllowedValue(query.sortDirection(), Set.of(SORT_DIRECTION_ASC, SORT_DIRECTION_DESC), FieldConstants.SORT_DIRECTION,
-                ValidationMessageConstants.MSG_SORT_DIRECTION_INVALID, errors);
+        FieldValidator.validateAllowedValue(query.sortDirection(),
+                Arrays.stream(SortDirectionEnum.values()).map(Enum::name).collect(Collectors.toSet()),
+                FieldConstants.SORT_DIRECTION, ValidationMessageConstants.MSG_SORT_DIRECTION_INVALID, errors);
 
         return errors;
     }

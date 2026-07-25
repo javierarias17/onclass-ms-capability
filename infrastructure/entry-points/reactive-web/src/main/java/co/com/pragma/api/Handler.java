@@ -4,6 +4,8 @@ import co.com.pragma.api.constants.QueryParamConstants;
 import co.com.pragma.api.dto.CapabilityInDto;
 import co.com.pragma.api.mapper.CapabilityDtoMapper;
 import co.com.pragma.model.capability.query.CapabilityListQuery;
+import co.com.pragma.model.capability.query.CapabilitySortFieldEnum;
+import co.com.pragma.model.capability.query.SortDirectionEnum;
 import co.com.pragma.usecase.listcapabilities.ListCapabilitiesUseCase;
 import co.com.pragma.usecase.registercapability.RegisterCapabilityUseCase;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,6 @@ public class Handler implements IHandlerDocs {
 
     private static final String DEFAULT_PAGE = "0";
     private static final String DEFAULT_SIZE = "10";
-    private static final String DEFAULT_SORT_BY = "name";
-    private static final String DEFAULT_SORT_DIRECTION = "asc";
 
     private final RegisterCapabilityUseCase registerCapabilityUseCase;
     private final ListCapabilitiesUseCase listCapabilitiesUseCase;
@@ -41,8 +41,8 @@ public class Handler implements IHandlerDocs {
         CapabilityListQuery query = new CapabilityListQuery(
                 serverRequest.queryParam(QueryParamConstants.PAGE).orElse(DEFAULT_PAGE),
                 serverRequest.queryParam(QueryParamConstants.SIZE).orElse(DEFAULT_SIZE),
-                serverRequest.queryParam(QueryParamConstants.SORT_BY).orElse(DEFAULT_SORT_BY),
-                serverRequest.queryParam(QueryParamConstants.SORT_DIRECTION).orElse(DEFAULT_SORT_DIRECTION));
+                serverRequest.queryParam(QueryParamConstants.SORT_BY).orElse(CapabilitySortFieldEnum.NAME.name()),
+                serverRequest.queryParam(QueryParamConstants.SORT_DIRECTION).orElse(SortDirectionEnum.ASC.name()));
 
         return listCapabilitiesUseCase.execute(query)
                 .map(capabilityDtoMapper::toCapabilityPageOutDto)
