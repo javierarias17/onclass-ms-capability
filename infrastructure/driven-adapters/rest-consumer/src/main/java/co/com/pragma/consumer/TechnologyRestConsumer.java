@@ -1,6 +1,7 @@
 package co.com.pragma.consumer;
 
 import co.com.pragma.consumer.dto.CapabilityTechnologyLinkInDto;
+import co.com.pragma.consumer.dto.CascadeDeleteTechnologiesInDto;
 import co.com.pragma.consumer.dto.TechnologiesByCapabilityEntryDto;
 import co.com.pragma.consumer.dto.TechnologiesByCapabilityInDto;
 import co.com.pragma.consumer.dto.TechnologiesByCapabilityOutDto;
@@ -31,6 +32,7 @@ public class TechnologyRestConsumer implements TechnologyGateway {
     private static final String CAPABILITY_TECHNOLOGIES_PATH = "/api/v1/capability-technologies";
     private static final String CAPABILITY_TECHNOLOGIES_BY_CAPABILITY_IDS_PATH = "/api/v1/capability-technologies/by-capability-ids";
     private static final String DELETE_CAPABILITY_TECHNOLOGIES_PATH = CAPABILITY_TECHNOLOGIES_PATH + "/{capabilityId}";
+    private static final String CAPABILITY_TECHNOLOGIES_CASCADE_DELETE_PATH = CAPABILITY_TECHNOLOGIES_PATH + "/cascade-delete";
 
     private static final String SERVICE_CALL_FAILED_MESSAGE = "Unable to reach technology service at %s";
     private static final int MAX_RETRY_ATTEMPTS = 2;
@@ -89,6 +91,19 @@ public class TechnologyRestConsumer implements TechnologyGateway {
                 .retryWhen(transientErrorRetry())
                 .onErrorMap(error -> new TechnologyServiceUnavailableException(
                         buildServiceCallFailedMessage(CAPABILITY_TECHNOLOGIES_BY_CAPABILITY_IDS_PATH), error));
+    }
+
+    @Override
+    @CircuitBreaker(name = "deleteOrphanedTechnologiesForCapabilities")
+    public Mono<Void> deleteOrphanedTechnologiesForCapabilities(List<Long> capabilityIds) {
+        return client.post()
+                .uri(CAPABILITY_TECHNOLOGIES_CASCADE_DELETE_PATH)
+                .bodyValue(new CascadeDeleteTechnologiesInDto(capabilityIds))
+                .retrieve()
+                .bodyToMono(Void.class)
+                .retryWhen(transientErrorRetry())
+                .onErrorMap(error -> new TechnologyServiceUnavailableException(
+                        buildServiceCallFailedMessage(CAPABILITY_TECHNOLOGIES_CASCADE_DELETE_PATH), error));
     }
 
     private static String buildServiceCallFailedMessage(String path) {

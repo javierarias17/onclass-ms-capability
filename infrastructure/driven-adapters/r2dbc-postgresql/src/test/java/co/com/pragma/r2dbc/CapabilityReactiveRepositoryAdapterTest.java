@@ -71,10 +71,10 @@ class CapabilityReactiveRepositoryAdapterTest {
         Capability capability = Capability.builder()
                 .name(VALID_NAME)
                 .description(VALID_DESCRIPTION)
-                .status(CapabilityStatusEnum.PENDING)
+                .status(CapabilityStatusEnum.CREATING)
                 .build();
         CapabilityEntity entity = new CapabilityEntity(null, VALID_NAME, VALID_DESCRIPTION,
-                CapabilityStatusEnum.PENDING.name(), NO_TECHNOLOGIES_YET, null);
+                CapabilityStatusEnum.CREATING.name(), NO_TECHNOLOGIES_YET, null);
 
         when(capabilityEntityMapper.toEntity(capability)).thenReturn(entity);
         when(repository.save(entity)).thenReturn(Mono.error(
@@ -90,10 +90,10 @@ class CapabilityReactiveRepositoryAdapterTest {
     void Expect_FindPageByNameAsc_When_SortingByNameAscending() {
         // Arrange
         CapabilityEntity entity = new CapabilityEntity(CAPABILITY_ID, VALID_NAME, VALID_DESCRIPTION,
-                CapabilityStatusEnum.COMPLETE.name(), TECHNOLOGY_COUNT, null);
+                CapabilityStatusEnum.CREATED.name(), TECHNOLOGY_COUNT, null);
         Capability capability = Capability.builder()
                 .id(CAPABILITY_ID).name(VALID_NAME).description(VALID_DESCRIPTION)
-                .status(CapabilityStatusEnum.COMPLETE).technologyCount(TECHNOLOGY_COUNT).build();
+                .status(CapabilityStatusEnum.CREATED).technologyCount(TECHNOLOGY_COUNT).build();
 
         when(repository.findPageByNameAsc(SIZE, OFFSET)).thenReturn(Flux.just(entity));
         when(capabilityEntityMapper.toDomain(entity)).thenReturn(capability);
@@ -153,11 +153,11 @@ class CapabilityReactiveRepositoryAdapterTest {
                 .expectNext(TOTAL_ELEMENTS)
                 .verifyComplete();
 
-        // el conteo debe filtrar por status = COMPLETE, igual que los findPageBy*
+        // el conteo debe filtrar por status = CREATED, igual que los findPageBy*
         Criteria criteria = (Criteria) queryCaptor.getValue().getCriteria().orElseThrow();
         assertEquals(STATUS_COLUMN, criteria.getColumn().getReference());
         assertEquals(Criteria.Comparator.EQ, criteria.getComparator());
-        assertEquals(CapabilityReactiveRepository.COMPLETE_STATUS, criteria.getValue());
+        assertEquals(CapabilityReactiveRepository.CREATED_STATUS, criteria.getValue());
     }
 
     @Test
@@ -165,7 +165,7 @@ class CapabilityReactiveRepositoryAdapterTest {
         // Arrange
         List<Long> capabilityIds = List.of(1L, 2L);
 
-        when(repository.findCompleteIds(capabilityIds)).thenReturn(Flux.just(1L, 2L));
+        when(repository.findCreatedIds(capabilityIds)).thenReturn(Flux.just(1L, 2L));
 
         // Act & Assert
         StepVerifier.create(adapter.findMissingIds(capabilityIds))
@@ -178,7 +178,7 @@ class CapabilityReactiveRepositoryAdapterTest {
         // Arrange
         List<Long> capabilityIds = List.of(1L, 2L, 99L);
 
-        when(repository.findCompleteIds(capabilityIds)).thenReturn(Flux.just(1L, 2L));
+        when(repository.findCreatedIds(capabilityIds)).thenReturn(Flux.just(1L, 2L));
 
         // Act & Assert
         StepVerifier.create(adapter.findMissingIds(capabilityIds))
@@ -190,11 +190,11 @@ class CapabilityReactiveRepositoryAdapterTest {
     void When_CapabilityIsStillPending_Expect_ItToBeTreatedAsMissing() {
         // Arrange: la capacidad existe en la tabla pero su saga de registro no terminó
         // (nunca se confirmó el vínculo con tecnologías), así que no debe ser referenciable.
-        // findCompleteIds ya filtra por status = COMPLETE en la query, por lo que el id 2
-        // (PENDING) simplemente no aparece en el resultado.
+        // findCreatedIds ya filtra por status = CREATED en la query, por lo que el id 2
+        // (CREATING) simplemente no aparece en el resultado.
         List<Long> capabilityIds = List.of(1L, 2L);
 
-        when(repository.findCompleteIds(capabilityIds)).thenReturn(Flux.just(1L));
+        when(repository.findCreatedIds(capabilityIds)).thenReturn(Flux.just(1L));
 
         // Act & Assert
         StepVerifier.create(adapter.findMissingIds(capabilityIds))
@@ -207,10 +207,10 @@ class CapabilityReactiveRepositoryAdapterTest {
         // Arrange
         List<Long> capabilityIds = List.of(CAPABILITY_ID);
         CapabilityEntity entity = new CapabilityEntity(CAPABILITY_ID, VALID_NAME, VALID_DESCRIPTION,
-                CapabilityStatusEnum.COMPLETE.name(), TECHNOLOGY_COUNT, null);
+                CapabilityStatusEnum.CREATED.name(), TECHNOLOGY_COUNT, null);
         Capability capability = Capability.builder()
                 .id(CAPABILITY_ID).name(VALID_NAME).description(VALID_DESCRIPTION)
-                .status(CapabilityStatusEnum.COMPLETE).technologyCount(TECHNOLOGY_COUNT).build();
+                .status(CapabilityStatusEnum.CREATED).technologyCount(TECHNOLOGY_COUNT).build();
 
         when(repository.findByIdIn(capabilityIds)).thenReturn(Flux.just(entity));
         when(capabilityEntityMapper.toDomain(entity)).thenReturn(capability);
@@ -220,6 +220,19 @@ class CapabilityReactiveRepositoryAdapterTest {
                 .expectNextMatches(capabilities -> capabilities.size() == 1
                         && capabilities.get(0).getId().equals(CAPABILITY_ID))
                 .verifyComplete();
+    }
+
+    @Test
+    void When_MarkingCapabilitiesAsDeleting_Expect_RepositoryToBeCalled() {
+        // Arrange
+        List<Long> capabilityIds = List.of(CAPABILITY_ID);
+        when(repository.markAsDeleting(capabilityIds)).thenReturn(Mono.empty());
+
+        // Act & Assert
+        StepVerifier.create(adapter.markAsDeleting(capabilityIds))
+                .verifyComplete();
+
+        verify(repository).markAsDeleting(capabilityIds);
     }
 
     private static Class<CapabilityEntity> eqCapabilityEntityClass() {

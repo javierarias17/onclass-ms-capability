@@ -82,13 +82,13 @@ public class CapabilityReactiveRepositoryAdapter extends ReactiveAdapterOperatio
 
     @Override
     public Mono<Long> count() {
-        Query completeOnly = Query.query(Criteria.where(STATUS_COLUMN).is(CapabilityReactiveRepository.COMPLETE_STATUS));
-        return template.count(completeOnly, CapabilityEntity.class);
+        Query createdOnly = Query.query(Criteria.where(STATUS_COLUMN).is(CapabilityReactiveRepository.CREATED_STATUS));
+        return template.count(createdOnly, CapabilityEntity.class);
     }
 
     @Override
     public Mono<List<Long>> findMissingIds(List<Long> capabilityIds) {
-        return repository.findCompleteIds(capabilityIds)
+        return repository.findCreatedIds(capabilityIds)
                 .collectList()
                 .map(existingIds -> capabilityIds.stream()
                         .distinct()
@@ -101,5 +101,10 @@ public class CapabilityReactiveRepositoryAdapter extends ReactiveAdapterOperatio
         return repository.findByIdIn(capabilityIds)
                 .map(this::toEntity)
                 .collectList();
+    }
+
+    @Override
+    public Mono<Void> markAsDeleting(List<Long> capabilityIds) {
+        return repository.markAsDeleting(capabilityIds);
     }
 }

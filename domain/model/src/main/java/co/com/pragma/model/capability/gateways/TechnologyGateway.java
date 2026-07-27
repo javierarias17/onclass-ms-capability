@@ -15,4 +15,6 @@ public interface TechnologyGateway {
     Mono<Void> deleteCapabilityTechnologies(Long capabilityId);
 
     Mono<Map<Long, List<TechnologySummary>>> findTechnologiesByCapabilityIds(List<Long> capabilityIds);
+
+    Mono<Void> deleteOrphanedTechnologiesForCapabilities(List<Long> capabilityIds);
 }

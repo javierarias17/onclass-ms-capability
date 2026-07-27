@@ -61,6 +61,8 @@ class LinkBootcampCapabilitiesUseCaseTest {
                 when(capabilityRepository.findMissingIds(command.capabilityIds())).thenReturn(Mono.just(List.of()));
                 when(capabilityBootcampRepository.saveAll(any(LinkBootcampCapabilities.class)))
                                 .thenReturn(Mono.just(savedLinks));
+                when(capabilityBootcampRepository.findDeletingCapabilityIds(any(LinkBootcampCapabilities.class)))
+                                .thenReturn(Mono.just(List.of()));
 
                 // Act & Assert
                 StepVerifier.create(useCase.execute(command))
@@ -73,6 +75,34 @@ class LinkBootcampCapabilitiesUseCaseTest {
                 LinkBootcampCapabilities saved = captor.getValue();
                 assertEquals(BOOTCAMP_ID, saved.getBootcampId().value());
                 assertEquals(command.capabilityIds(), saved.getCapabilityIds().value());
+                verify(capabilityBootcampRepository, never()).deleteByBootcampId(any());
+        }
+
+        @Test
+        void Expect_CapabilitiesNotFoundException_When_SomeSavedCapabilityEndedUpDeleting() {
+                // Arrange: entre el chequeo de existencia y el guardado, otro request marcó
+                // una de las capacidades como DELETING -> se deben borrar todas las
+                // asociaciones recién creadas para este bootcamp y reportar el error con
+                // todas las capacidades afectadas, no solo la primera.
+                LinkBootcampCapabilitiesCommand command = new LinkBootcampCapabilitiesCommand(BOOTCAMP_ID,
+                                List.of(CAPABILITY_ID_1, CAPABILITY_ID_2));
+                List<CapabilityBootcamp> savedLinks = List.of(
+                                CapabilityBootcamp.builder().id(LINK_ID).bootcampId(BOOTCAMP_ID)
+                                                .capabilityId(CAPABILITY_ID_1).build());
+
+                when(capabilityRepository.findMissingIds(command.capabilityIds())).thenReturn(Mono.just(List.of()));
+                when(capabilityBootcampRepository.saveAll(any(LinkBootcampCapabilities.class)))
+                                .thenReturn(Mono.just(savedLinks));
+                when(capabilityBootcampRepository.findDeletingCapabilityIds(any(LinkBootcampCapabilities.class)))
+                                .thenReturn(Mono.just(List.of(CAPABILITY_ID_2)));
+                when(capabilityBootcampRepository.deleteByBootcampId(BOOTCAMP_ID)).thenReturn(Mono.empty());
+
+                // Act & Assert
+                StepVerifier.create(useCase.execute(command))
+                                .expectError(CapabilitiesNotFoundException.class)
+                                .verify();
+
+                verify(capabilityBootcampRepository).deleteByBootcampId(BOOTCAMP_ID);
         }
 
         @Test

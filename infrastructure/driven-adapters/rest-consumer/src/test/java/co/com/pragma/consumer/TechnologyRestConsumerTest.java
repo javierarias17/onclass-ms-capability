@@ -191,4 +191,28 @@ class TechnologyRestConsumerTest {
                 .expectError(TechnologyServiceUnavailableException.class)
                 .verify(Duration.ofSeconds(2));
     }
+
+    @Test
+    void When_DeletingOrphanedTechnologiesForCapabilities_Expect_CompletionWithoutError() {
+        // Arrange
+        mockBackEnd.enqueue(new MockResponse().setResponseCode(HttpStatus.NO_CONTENT.value()));
+
+        // Act & Assert
+        StepVerifier.create(technologyRestConsumer.deleteOrphanedTechnologiesForCapabilities(List.of(CAPABILITY_ID)))
+                .verifyComplete();
+    }
+
+    @Test
+    void When_DeletingOrphanedTechnologiesForCapabilitiesFails_Expect_TechnologyServiceUnavailableException() {
+        // Arrange
+        mockBackEnd.enqueue(new MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(HttpStatus.BAD_REQUEST.value())
+                .setBody("{\"message\": \"Business validation failed\"}"));
+
+        // Act & Assert
+        StepVerifier.create(technologyRestConsumer.deleteOrphanedTechnologiesForCapabilities(List.of(CAPABILITY_ID)))
+                .expectError(TechnologyServiceUnavailableException.class)
+                .verify(Duration.ofSeconds(2));
+    }
 }

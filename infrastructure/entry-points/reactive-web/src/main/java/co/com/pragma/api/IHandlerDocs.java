@@ -422,4 +422,47 @@ public interface IHandlerDocs {
                                     """)))
     })
     Mono<ServerResponse> listenFindCapabilitiesByBootcampIds(ServerRequest serverRequest);
+
+    @Operation(
+            operationId = "listenDeleteOrphanedCapabilitiesForBootcamp",
+            summary = "Delete capabilities orphaned by a bootcamp (HU-06 cascade)",
+            description = "Removes the bootcamp-capability links for the given bootcamp id, cascades to "
+                    + "technology-ms to delete technologies orphaned by the capabilities that are about to "
+                    + "be removed, and finally deletes any capability left without any other bootcamp "
+                    + "referencing it. A capability still referenced by another bootcamp is never deleted. "
+                    + "Idempotent: calling it again once the links/capabilities are already gone is a no-op.",
+            tags = { "Capabilities" },
+            parameters = @Parameter(name = PathVariableConstants.BOOTCAMP_ID, in = ParameterIn.PATH, required = true,
+                    schema = @Schema(type = "integer", format = "int64")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "No Content"),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "Business validation failed",
+                                      "errors": [
+                                        {
+                                          "field": "bootcampId",
+                                          "message": "Bootcamp id must be numeric"
+                                        }
+                                      ]
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "An unexpected error occurred. Please contact the administrator."
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "message": "The service is temporarily unavailable. Please try again shortly."
+                                    }
+                                    """)))
+    })
+    Mono<ServerResponse> listenDeleteOrphanedCapabilitiesForBootcamp(ServerRequest serverRequest);
 }

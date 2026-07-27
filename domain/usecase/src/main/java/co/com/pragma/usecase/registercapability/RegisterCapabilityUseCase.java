@@ -39,12 +39,12 @@ public class RegisterCapabilityUseCase {
     }
 
     private Mono<Capability> resumeOrReject(Capability existingCapability, CapabilityCreateCommand command) {
-        if (existingCapability.getStatus() == CapabilityStatusEnum.COMPLETE)
-            return Mono.error(new CapabilityAlreadyExistsException(
-                    FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
-                    Map.of(FieldConstants.NAME, FunctionalMessageConstants.CAPABILITY_ALREADY_EXISTS)));
+        if (existingCapability.getStatus() == CapabilityStatusEnum.CREATING)
+            return registerAndLink(existingCapability.getId(), existingCapability.getVersion(), command);
 
-        return registerAndLink(existingCapability.getId(), existingCapability.getVersion(), command);
+        return Mono.error(new CapabilityAlreadyExistsException(
+                FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
+                Map.of(FieldConstants.NAME, FunctionalMessageConstants.CAPABILITY_ALREADY_EXISTS)));
     }
 
     private Mono<Capability> registerAndLink(Long capabilityId, Long version, CapabilityCreateCommand command) {
@@ -55,7 +55,7 @@ public class RegisterCapabilityUseCase {
                                 .version(version)
                                 .name(command.name())
                                 .description(command.description())
-                                .status(CapabilityStatusEnum.PENDING)
+                                .status(CapabilityStatusEnum.CREATING)
                                 .technologyCount(NO_TECHNOLOGIES_LINKED_YET)
                                 .build())
                         : Mono.error(new TechnologiesNotFoundException(
@@ -63,13 +63,14 @@ public class RegisterCapabilityUseCase {
                                 Map.of(FieldConstants.TECHNOLOGY_IDS,
                                         String.format(FunctionalMessageConstants.TECHNOLOGIES_NOT_FOUND, missingIds)))))
                 .flatMap(savedCapability -> deleteStaleLinksIfResuming(capabilityId, savedCapability.getId())
-                        .then(Mono.defer(() -> technologyGateway.linkCapabilityTechnologies(savedCapability.getId(), command.technologyIds())))
+                        .then(Mono.defer(() -> technologyGateway.linkCapabilityTechnologies(savedCapability.getId(),
+                                command.technologyIds())))
                         .then(Mono.defer(() -> capabilityRepository.save(Capability.builder()
                                 .id(savedCapability.getId())
                                 .version(savedCapability.getVersion())
                                 .name(savedCapability.getName().value())
                                 .description(savedCapability.getDescription().value())
-                                .status(CapabilityStatusEnum.COMPLETE)
+                                .status(CapabilityStatusEnum.CREATED)
                                 .technologyCount(command.technologyIds().size())
                                 .build()))));
     }

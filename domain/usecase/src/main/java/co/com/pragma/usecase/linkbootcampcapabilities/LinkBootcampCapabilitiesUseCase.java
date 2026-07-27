@@ -27,10 +27,22 @@ public class LinkBootcampCapabilitiesUseCase {
                         .build())
                 .flatMap(request -> capabilityRepository.findMissingIds(request.getCapabilityIds().value())
                         .flatMap(missingIds -> missingIds.isEmpty()
-                                ? capabilityBootcampRepository.saveAll(request)
+                                ? saveAllAndRejectIfAnyEndedUpDeleting(request)
                                 : Mono.error(new CapabilitiesNotFoundException(
                                         FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
                                         Map.of(FieldConstants.CAPABILITY_IDS,
                                                 String.format(FunctionalMessageConstants.CAPABILITIES_NOT_FOUND, missingIds))))));
+    }
+
+    private Mono<List<CapabilityBootcamp>> saveAllAndRejectIfAnyEndedUpDeleting(LinkBootcampCapabilities request) {
+        return capabilityBootcampRepository.saveAll(request)
+                .flatMap(savedLinks -> capabilityBootcampRepository.findDeletingCapabilityIds(request)
+                        .flatMap(deletingCapabilityIds -> deletingCapabilityIds.isEmpty()
+                                ? Mono.just(savedLinks)
+                                : capabilityBootcampRepository.deleteByBootcampId(request.getBootcampId().value())
+                                        .then(Mono.error(new CapabilitiesNotFoundException(
+                                                FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
+                                                Map.of(FieldConstants.CAPABILITY_IDS, String.format(
+                                                        FunctionalMessageConstants.CAPABILITIES_NOT_FOUND, deletingCapabilityIds)))))));
     }
 }

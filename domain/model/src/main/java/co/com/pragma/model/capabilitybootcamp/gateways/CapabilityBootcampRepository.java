@@ -12,4 +12,12 @@ public interface CapabilityBootcampRepository {
     Mono<Void> deleteByBootcampId(Long bootcampId);
 
     Mono<List<CapabilityBootcamp>> findByBootcampIds(List<Long> bootcampIds);
+
+    Mono<List<Long>> findCapabilityIdsByBootcampId(Long bootcampId);
+
+    Mono<List<Long>> findCapabilityIdsReferencedByOtherBootcamps(List<Long> capabilityIds, Long excludingBootcampId);
+
+    Mono<List<Long>> findDeletingCapabilityIds(LinkBootcampCapabilities linkBootcampCapabilities);
+
+    Mono<Void> deleteLinksAndOrphanedCapabilities(Long bootcampId, List<Long> candidateCapabilityIds);
 }

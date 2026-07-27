@@ -20,4 +20,6 @@ public interface CapabilityRepository {
     Mono<List<Long>> findMissingIds(List<Long> capabilityIds);
 
     Mono<List<Capability>> findByIds(List<Long> capabilityIds);
+
+    Mono<Void> markAsDeleting(List<Long> capabilityIds);
 }

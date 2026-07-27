@@ -24,6 +24,7 @@ public class RouterRest {
             + "/{" + PathVariableConstants.BOOTCAMP_ID + "}";
     private static final String BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH = BOOTCAMP_CAPABILITIES_PATH
             + "/by-bootcamp-ids";
+    private static final String BOOTCAMP_CAPABILITIES_CASCADE_PATH = BOOTCAMP_CAPABILITIES_BY_ID_PATH + "/cascade";
 
     @Bean
     @RouterOperations({
@@ -38,7 +39,9 @@ public class RouterRest {
             @RouterOperation(path = BOOTCAMP_CAPABILITIES_BY_ID_PATH, method = {
                     RequestMethod.DELETE }, beanClass = Handler.class, beanMethod = "listenDeleteBootcampCapabilities"),
             @RouterOperation(path = BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH, method = {
-                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenFindCapabilitiesByBootcampIds")
+                    RequestMethod.POST }, beanClass = Handler.class, beanMethod = "listenFindCapabilitiesByBootcampIds"),
+            @RouterOperation(path = BOOTCAMP_CAPABILITIES_CASCADE_PATH, method = {
+                    RequestMethod.DELETE }, beanClass = Handler.class, beanMethod = "listenDeleteOrphanedCapabilitiesForBootcamp")
     })
     public RouterFunction<ServerResponse> capabilityRouterFunction(Handler handler) {
         return route(POST(CAPABILITIES_PATH), handler::listenRegisterCapability)
@@ -46,6 +49,7 @@ public class RouterRest {
                 .andRoute(POST(CAPABILITIES_EXISTENCE_CHECK_PATH), handler::listenCheckCapabilitiesExistence)
                 .andRoute(POST(BOOTCAMP_CAPABILITIES_PATH), handler::listenLinkBootcampCapabilities)
                 .andRoute(DELETE(BOOTCAMP_CAPABILITIES_BY_ID_PATH), handler::listenDeleteBootcampCapabilities)
-                .andRoute(POST(BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH), handler::listenFindCapabilitiesByBootcampIds);
+                .andRoute(POST(BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH), handler::listenFindCapabilitiesByBootcampIds)
+                .andRoute(DELETE(BOOTCAMP_CAPABILITIES_CASCADE_PATH), handler::listenDeleteOrphanedCapabilitiesForBootcamp);
     }
 }

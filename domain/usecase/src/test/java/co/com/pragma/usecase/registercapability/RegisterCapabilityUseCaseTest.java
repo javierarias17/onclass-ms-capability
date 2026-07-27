@@ -59,20 +59,20 @@ class RegisterCapabilityUseCaseTest {
     void When_CapabilityInformationIsValid_Expect_CapabilityToBeSavedAndLinked() {
         // Arrange
         CapabilityCreateCommand command = new CapabilityCreateCommand(VALID_NAME, VALID_DESCRIPTION, VALID_TECHNOLOGY_IDS);
-        Capability pendingCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.PENDING);
-        Capability completeCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.COMPLETE);
+        Capability creatingCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.CREATING);
+        Capability createdCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.CREATED);
 
         when(capabilityRepository.findByName(VALID_NAME)).thenReturn(Mono.empty());
         when(technologyGateway.checkTechnologiesExistence(VALID_TECHNOLOGY_IDS)).thenReturn(Mono.just(List.of()));
         when(capabilityRepository.save(any(Capability.class)))
-                .thenReturn(Mono.just(pendingCapability), Mono.just(completeCapability));
+                .thenReturn(Mono.just(creatingCapability), Mono.just(createdCapability));
         when(technologyGateway.linkCapabilityTechnologies(CAPABILITY_ID, VALID_TECHNOLOGY_IDS)).thenReturn(Mono.empty());
 
         // Act & Assert
         StepVerifier.create(useCase.execute(command))
                 .expectNextMatches(result -> result.getId().equals(CAPABILITY_ID)
                         && result.getName().value().equals(VALID_NAME)
-                        && result.getStatus() == CapabilityStatusEnum.COMPLETE)
+                        && result.getStatus() == CapabilityStatusEnum.CREATED)
                 .verifyComplete();
 
         // registro nuevo: no hay vínculos previos que limpiar
@@ -97,12 +97,12 @@ class RegisterCapabilityUseCaseTest {
     }
 
     @Test
-    void Expect_CapabilityAlreadyExistsException_When_ExistingCapabilityIsComplete() {
+    void Expect_CapabilityAlreadyExistsException_When_ExistingCapabilityIsCreated() {
         // Arrange
         CapabilityCreateCommand command = new CapabilityCreateCommand(VALID_NAME, VALID_DESCRIPTION, VALID_TECHNOLOGY_IDS);
-        Capability completeCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.COMPLETE);
+        Capability createdCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.CREATED);
 
-        when(capabilityRepository.findByName(VALID_NAME)).thenReturn(Mono.just(completeCapability));
+        when(capabilityRepository.findByName(VALID_NAME)).thenReturn(Mono.just(createdCapability));
 
         // Act & Assert
         StepVerifier.create(useCase.execute(command))
@@ -114,23 +114,23 @@ class RegisterCapabilityUseCaseTest {
     }
 
     @Test
-    void Expect_CapabilityToBeResumedAndCompleted_When_ExistingCapabilityIsPending() {
-        // Arrange: un intento anterior murió a mitad de camino y dejó la capability en PENDING
+    void Expect_CapabilityToBeResumedAndCreated_When_ExistingCapabilityIsCreating() {
+        // Arrange: un intento anterior murió a mitad de camino y dejó la capability en CREATING
         CapabilityCreateCommand command = new CapabilityCreateCommand(VALID_NAME, VALID_DESCRIPTION, VALID_TECHNOLOGY_IDS);
-        Capability pendingCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.PENDING);
-        Capability completeCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.COMPLETE);
+        Capability creatingCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.CREATING);
+        Capability createdCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.CREATED);
 
-        when(capabilityRepository.findByName(VALID_NAME)).thenReturn(Mono.just(pendingCapability));
+        when(capabilityRepository.findByName(VALID_NAME)).thenReturn(Mono.just(creatingCapability));
         when(technologyGateway.checkTechnologiesExistence(VALID_TECHNOLOGY_IDS)).thenReturn(Mono.just(List.of()));
         when(capabilityRepository.save(argThat(c -> c != null && CAPABILITY_ID.equals(c.getId()))))
-                .thenReturn(Mono.just(pendingCapability), Mono.just(completeCapability));
+                .thenReturn(Mono.just(creatingCapability), Mono.just(createdCapability));
         when(technologyGateway.deleteCapabilityTechnologies(CAPABILITY_ID)).thenReturn(Mono.empty());
         when(technologyGateway.linkCapabilityTechnologies(CAPABILITY_ID, VALID_TECHNOLOGY_IDS)).thenReturn(Mono.empty());
 
         // Act & Assert
         StepVerifier.create(useCase.execute(command))
                 .expectNextMatches(result -> result.getId().equals(CAPABILITY_ID)
-                        && result.getStatus() == CapabilityStatusEnum.COMPLETE)
+                        && result.getStatus() == CapabilityStatusEnum.CREATED)
                 .verifyComplete();
 
         // el mismo id se reutiliza y se limpian los vínculos parciales antes de volver a enlazar
@@ -139,15 +139,15 @@ class RegisterCapabilityUseCaseTest {
     }
 
     @Test
-    void Expect_CapabilityToRemainPending_When_LinkingTechnologiesFails() {
+    void Expect_CapabilityToRemainCreating_When_LinkingTechnologiesFails() {
         // Arrange
         CapabilityCreateCommand command = new CapabilityCreateCommand(VALID_NAME, VALID_DESCRIPTION, VALID_TECHNOLOGY_IDS);
-        Capability pendingCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.PENDING);
+        Capability creatingCapability = capabilityWithStatus(CAPABILITY_ID, CapabilityStatusEnum.CREATING);
         RuntimeException linkFailure = new RuntimeException("technology service unavailable");
 
         when(capabilityRepository.findByName(VALID_NAME)).thenReturn(Mono.empty());
         when(technologyGateway.checkTechnologiesExistence(VALID_TECHNOLOGY_IDS)).thenReturn(Mono.just(List.of()));
-        when(capabilityRepository.save(any(Capability.class))).thenReturn(Mono.just(pendingCapability));
+        when(capabilityRepository.save(any(Capability.class))).thenReturn(Mono.just(creatingCapability));
         when(technologyGateway.linkCapabilityTechnologies(CAPABILITY_ID, VALID_TECHNOLOGY_IDS)).thenReturn(Mono.error(linkFailure));
 
         // Act & Assert
@@ -155,7 +155,7 @@ class RegisterCapabilityUseCaseTest {
                 .expectErrorMatches(error -> error == linkFailure)
                 .verify();
 
-        // no se marca COMPLETE: la capability queda en PENDING para que un reintento la repare
+        // no se marca CREATED: la capability queda en CREATING para que un reintento la repare
         verify(capabilityRepository, times(1)).save(any(Capability.class));
     }
 
