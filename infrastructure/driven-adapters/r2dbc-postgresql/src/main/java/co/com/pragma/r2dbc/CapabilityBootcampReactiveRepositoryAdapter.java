@@ -41,15 +41,16 @@ public class CapabilityBootcampReactiveRepositoryAdapter extends
                         .defaultIfEmpty(CapabilityBootcamp.builder()
                                 .bootcampId(bootcampId)
                                 .capabilityId(capabilityId)
-                                .build()))
-                .collectList()
-                // la capacidad pudo haberse borrado físicamente (FK) entre el chequeo de
-                // existencia previo y este INSERT; se mapea al mismo error de negocio que
-                // ya usan los otros dos rechazos, en vez de dejar escapar el error técnico crudo
-                .onErrorMap(DataIntegrityViolationException.class, ex -> new CapabilitiesNotFoundException(
-                        FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
-                        Map.of(FieldConstants.CAPABILITY_IDS, String.format(FunctionalMessageConstants.CAPABILITIES_NOT_FOUND,
-                                linkBootcampCapabilities.getCapabilityIds().value()))));
+                                .build())
+                        // la capacidad pudo haberse borrado físicamente (FK) entre el chequeo de
+                        // existencia previo y este INSERT; se mapea al mismo error de negocio que
+                        // ya usan los otros dos rechazos, reportando solo el id que realmente violó
+                        // el FK (no toda la lista original recibida por parámetro)
+                        .onErrorMap(DataIntegrityViolationException.class, ex -> new CapabilitiesNotFoundException(
+                                FunctionalMessageConstants.BUSINESS_VALIDATION_FAILED,
+                                Map.of(FieldConstants.CAPABILITY_IDS, String.format(
+                                        FunctionalMessageConstants.CAPABILITIES_NOT_FOUND, List.of(capabilityId))))))
+                .collectList();
     }
 
     @Override

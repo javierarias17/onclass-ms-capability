@@ -44,12 +44,17 @@ public class RouterRest {
                     RequestMethod.DELETE }, beanClass = Handler.class, beanMethod = "listenDeleteOrphanedCapabilitiesForBootcamp")
     })
     public RouterFunction<ServerResponse> capabilityRouterFunction(Handler handler) {
+        //HU-02
         return route(POST(CAPABILITIES_PATH), handler::listenRegisterCapability)
+                //HU-03
                 .andRoute(GET(CAPABILITIES_PATH), handler::listenListCapabilities)
+                //HU-04
                 .andRoute(POST(CAPABILITIES_EXISTENCE_CHECK_PATH), handler::listenCheckCapabilitiesExistence)
                 .andRoute(POST(BOOTCAMP_CAPABILITIES_PATH), handler::listenLinkBootcampCapabilities)
                 .andRoute(DELETE(BOOTCAMP_CAPABILITIES_BY_ID_PATH), handler::listenDeleteBootcampCapabilities)
+                //HU-05
                 .andRoute(POST(BOOTCAMP_CAPABILITIES_BY_BOOTCAMP_IDS_PATH), handler::listenFindCapabilitiesByBootcampIds)
+                //HU-06
                 .andRoute(DELETE(BOOTCAMP_CAPABILITIES_CASCADE_PATH), handler::listenDeleteOrphanedCapabilitiesForBootcamp);
     }
 }

@@ -46,7 +46,7 @@ public class Handler implements IHandlerDocs {
         @Override
         public Mono<ServerResponse> listenRegisterCapability(ServerRequest serverRequest) {
                 return serverRequest.bodyToMono(CapabilityInDto.class)
-                                .defaultIfEmpty(new CapabilityInDto(null, null, null))
+                                .defaultIfEmpty(CapabilityInDto.builder().build())
                                 .map(capabilityDtoMapper::toCapabilityCreateCommand)
                                 .flatMap(command -> registerCapabilityUseCase.execute(command)
                                                 .map(capability -> capabilityDtoMapper.toCapabilityOutDto(capability,
@@ -72,7 +72,7 @@ public class Handler implements IHandlerDocs {
         @Override
         public Mono<ServerResponse> listenCheckCapabilitiesExistence(ServerRequest serverRequest) {
                 return serverRequest.bodyToMono(CapabilityExistenceInDto.class)
-                                .defaultIfEmpty(new CapabilityExistenceInDto(null))
+                                .defaultIfEmpty(CapabilityExistenceInDto.builder().build())
                                 .flatMap(dto -> checkCapabilitiesExistenceUseCase.execute(dto.capabilityIds()))
                                 .map(CapabilityExistenceOutDto::new)
                                 .flatMap(response -> ServerResponse.status(HttpStatus.OK).bodyValue(response));
@@ -81,7 +81,7 @@ public class Handler implements IHandlerDocs {
         @Override
         public Mono<ServerResponse> listenLinkBootcampCapabilities(ServerRequest serverRequest) {
                 return serverRequest.bodyToMono(BootcampCapabilityLinkInDto.class)
-                                .defaultIfEmpty(new BootcampCapabilityLinkInDto(null, null))
+                                .defaultIfEmpty(BootcampCapabilityLinkInDto.builder().build())
                                 .map(bootcampCapabilityDtoMapper::toLinkBootcampCapabilitiesCommand)
                                 .flatMap(linkBootcampCapabilitiesUseCase::execute)
                                 .map(bootcampCapabilityDtoMapper::toBootcampCapabilityLinkOutDto)
@@ -98,7 +98,7 @@ public class Handler implements IHandlerDocs {
         @Override
         public Mono<ServerResponse> listenFindCapabilitiesByBootcampIds(ServerRequest serverRequest) {
                 return serverRequest.bodyToMono(CapabilitiesByBootcampInDto.class)
-                                .defaultIfEmpty(new CapabilitiesByBootcampInDto(null))
+                                .defaultIfEmpty(CapabilitiesByBootcampInDto.builder().build())
                                 .flatMap(dto -> findCapabilitiesByBootcampIdsUseCase.execute(dto.bootcampIds()))
                                 .map(bootcampCapabilityDtoMapper::toCapabilitiesByBootcampOutDto)
                                 .flatMap(response -> ServerResponse.status(HttpStatus.OK).bodyValue(response));

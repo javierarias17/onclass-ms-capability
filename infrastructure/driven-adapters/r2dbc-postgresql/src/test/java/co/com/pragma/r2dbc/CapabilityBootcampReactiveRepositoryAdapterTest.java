@@ -3,6 +3,7 @@ package co.com.pragma.r2dbc;
 import co.com.pragma.model.capability.exceptions.CapabilitiesNotFoundException;
 import co.com.pragma.model.capabilitybootcamp.CapabilityBootcamp;
 import co.com.pragma.model.capabilitybootcamp.LinkBootcampCapabilities;
+import co.com.pragma.model.common.FieldConstants;
 import co.com.pragma.r2dbc.entity.CapabilityBootcampEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,20 +70,30 @@ class CapabilityBootcampReactiveRepositoryAdapterTest {
 
     @Test
     void Expect_CapabilitiesNotFoundException_When_CapabilityWasPhysicallyDeletedBeforeInsert() {
-        // Arrange: la capacidad pasó el chequeo de existencia previo, pero ya fue borrada
-        // físicamente (FK) para cuando este INSERT corre -> Postgres rechaza el INSERT con
-        // una violación de foreign key; se mapea al mismo error de negocio que los demás
-        // rechazos, en vez de dejar escapar la excepción técnica cruda.
+        // Arrange: OTHER_CAPABILITY_ID paso el chequeo de existencia previo, pero ya fue
+        // borrada físicamente (FK) para cuando este INSERT corre -> Postgres rechaza SOLO ese
+        // INSERT con una violación de foreign key; el error debe reportar únicamente ese id,
+        // no toda la lista de capabilityIds que llegó por parámetro (CAPABILITY_ID sí existe).
         LinkBootcampCapabilities request = LinkBootcampCapabilities.builder()
-                .bootcampId(BOOTCAMP_ID).capabilityIds(List.of(CAPABILITY_ID)).build();
+                .bootcampId(BOOTCAMP_ID).capabilityIds(List.of(CAPABILITY_ID, OTHER_CAPABILITY_ID)).build();
+        CapabilityBootcampEntity entity = CapabilityBootcampEntity.builder()
+                .id(RELATION_ID).bootcampId(BOOTCAMP_ID).capabilityId(CAPABILITY_ID).build();
+        CapabilityBootcamp relation = CapabilityBootcamp.builder()
+                .id(RELATION_ID).bootcampId(BOOTCAMP_ID).capabilityId(CAPABILITY_ID).build();
 
-        when(repository.insertIgnoringConflict(BOOTCAMP_ID, CAPABILITY_ID)).thenReturn(Mono.error(
+        // lenient: flatMap cancela las suscripciones restantes en cuanto una falla, así que
+        // no siempre se invoca el insert de CAPABILITY_ID antes de que la cadena se corte
+        lenient().when(repository.insertIgnoringConflict(BOOTCAMP_ID, CAPABILITY_ID)).thenReturn(Mono.just(entity));
+        lenient().when(mapper.map(entity, CapabilityBootcamp.class)).thenReturn(relation);
+        lenient().when(repository.insertIgnoringConflict(BOOTCAMP_ID, OTHER_CAPABILITY_ID)).thenReturn(Mono.error(
                 new DataIntegrityViolationException("insert or update on table \"capability_bootcamps\" "
                         + "violates foreign key constraint")));
 
         // Act & Assert
         StepVerifier.create(adapter.saveAll(request))
-                .expectError(CapabilitiesNotFoundException.class)
+                .expectErrorMatches(error -> error instanceof CapabilitiesNotFoundException notFound
+                        && notFound.getErrors().get(FieldConstants.CAPABILITY_IDS).contains(OTHER_CAPABILITY_ID.toString())
+                        && !notFound.getErrors().get(FieldConstants.CAPABILITY_IDS).contains(CAPABILITY_ID.toString()))
                 .verify();
     }
 
