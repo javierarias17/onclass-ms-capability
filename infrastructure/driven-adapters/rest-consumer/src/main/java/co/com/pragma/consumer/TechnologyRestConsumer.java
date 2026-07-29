@@ -7,7 +7,7 @@ import co.com.pragma.consumer.dto.TechnologiesByCapabilityInDto;
 import co.com.pragma.consumer.dto.TechnologiesByCapabilityOutDto;
 import co.com.pragma.consumer.dto.TechnologyExistenceInDto;
 import co.com.pragma.consumer.dto.TechnologyExistenceOutDto;
-import co.com.pragma.model.capability.exceptions.TechnologyServiceUnavailableException;
+import co.com.pragma.model.capability.exceptions.ServiceUnavailableException;
 import co.com.pragma.model.capability.gateways.TechnologyGateway;
 import co.com.pragma.model.capability.query.TechnologySummary;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -50,7 +50,7 @@ public class TechnologyRestConsumer implements TechnologyGateway {
                 .bodyToMono(TechnologyExistenceOutDto.class)
                 .map(TechnologyExistenceOutDto::missingIds)
                 .retryWhen(transientErrorRetry())
-                .onErrorMap(error -> new TechnologyServiceUnavailableException(
+                .onErrorMap(error -> new ServiceUnavailableException(
                         buildServiceCallFailedMessage(EXISTENCE_CHECK_PATH), error));
     }
 
@@ -63,7 +63,7 @@ public class TechnologyRestConsumer implements TechnologyGateway {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .retryWhen(transientErrorRetry())
-                .onErrorMap(error -> new TechnologyServiceUnavailableException(
+                .onErrorMap(error -> new ServiceUnavailableException(
                         buildServiceCallFailedMessage(CAPABILITY_TECHNOLOGIES_PATH), error));
     }
 
@@ -75,7 +75,7 @@ public class TechnologyRestConsumer implements TechnologyGateway {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .retryWhen(transientErrorRetry())
-                .onErrorMap(error -> new TechnologyServiceUnavailableException(
+                .onErrorMap(error -> new ServiceUnavailableException(
                         buildServiceCallFailedMessage(DELETE_CAPABILITY_TECHNOLOGIES_PATH), error));
     }
 
@@ -89,7 +89,7 @@ public class TechnologyRestConsumer implements TechnologyGateway {
                 .bodyToMono(TechnologiesByCapabilityOutDto.class)
                 .map(this::toTechnologiesByCapabilityMap)
                 .retryWhen(transientErrorRetry())
-                .onErrorMap(error -> new TechnologyServiceUnavailableException(
+                .onErrorMap(error -> new ServiceUnavailableException(
                         buildServiceCallFailedMessage(CAPABILITY_TECHNOLOGIES_BY_CAPABILITY_IDS_PATH), error));
     }
 
@@ -102,7 +102,7 @@ public class TechnologyRestConsumer implements TechnologyGateway {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .retryWhen(transientErrorRetry())
-                .onErrorMap(error -> new TechnologyServiceUnavailableException(
+                .onErrorMap(error -> new ServiceUnavailableException(
                         buildServiceCallFailedMessage(CAPABILITY_TECHNOLOGIES_CASCADE_DELETE_PATH), error));
     }
 

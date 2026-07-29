@@ -1,7 +1,7 @@
 package co.com.pragma.consumer;
 
 import co.com.pragma.model.capability.query.TechnologySummary;
-import co.com.pragma.model.capability.exceptions.TechnologyServiceUnavailableException;
+import co.com.pragma.model.capability.exceptions.ServiceUnavailableException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -120,7 +120,7 @@ class TechnologyRestConsumerTest {
     }
 
     @Test
-    void When_FindingTechnologiesByCapabilityIdsFails_Expect_TechnologyServiceUnavailableException() {
+    void When_FindingTechnologiesByCapabilityIdsFails_Expect_ServiceUnavailableException() {
         // Arrange: solo se encola UNA respuesta 400 (no transitoria, no hay reintento);
         // el consumer debe traducir cualquier falla de este endpoint a un 503 para el cliente.
         mockBackEnd.enqueue(new MockResponse()
@@ -130,7 +130,7 @@ class TechnologyRestConsumerTest {
 
         // Act & Assert
         StepVerifier.create(technologyRestConsumer.findTechnologiesByCapabilityIds(List.of(GROUPED_CAPABILITY_ID)))
-                .expectError(TechnologyServiceUnavailableException.class)
+                .expectError(ServiceUnavailableException.class)
                 .verify(Duration.ofSeconds(2));
     }
 
@@ -150,7 +150,7 @@ class TechnologyRestConsumerTest {
     }
 
     @Test
-    void When_ServerRespondsWithBusinessError_Expect_NoRetryAndTechnologyServiceUnavailableException() {
+    void When_ServerRespondsWithBusinessError_Expect_NoRetryAndServiceUnavailableException() {
         // Arrange: solo se encola UNA respuesta 400; si el consumer reintentara,
         // la segunda llamada se quedaría esperando una respuesta que no existe y el test fallaría por timeout.
         mockBackEnd.enqueue(new MockResponse()
@@ -160,12 +160,12 @@ class TechnologyRestConsumerTest {
 
         // Act & Assert
         StepVerifier.create(technologyRestConsumer.checkTechnologiesExistence(TECHNOLOGY_IDS))
-                .expectError(TechnologyServiceUnavailableException.class)
+                .expectError(ServiceUnavailableException.class)
                 .verify(Duration.ofSeconds(2));
     }
 
     @Test
-    void When_LinkingTechnologiesFails_Expect_TechnologyServiceUnavailableException() {
+    void When_LinkingTechnologiesFails_Expect_ServiceUnavailableException() {
         // Arrange
         mockBackEnd.enqueue(new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -174,12 +174,12 @@ class TechnologyRestConsumerTest {
 
         // Act & Assert
         StepVerifier.create(technologyRestConsumer.linkCapabilityTechnologies(CAPABILITY_ID, TECHNOLOGY_IDS))
-                .expectError(TechnologyServiceUnavailableException.class)
+                .expectError(ServiceUnavailableException.class)
                 .verify(Duration.ofSeconds(2));
     }
 
     @Test
-    void When_DeletingCapabilityTechnologiesFails_Expect_TechnologyServiceUnavailableException() {
+    void When_DeletingCapabilityTechnologiesFails_Expect_ServiceUnavailableException() {
         // Arrange
         mockBackEnd.enqueue(new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -188,7 +188,7 @@ class TechnologyRestConsumerTest {
 
         // Act & Assert
         StepVerifier.create(technologyRestConsumer.deleteCapabilityTechnologies(CAPABILITY_ID))
-                .expectError(TechnologyServiceUnavailableException.class)
+                .expectError(ServiceUnavailableException.class)
                 .verify(Duration.ofSeconds(2));
     }
 
@@ -203,7 +203,7 @@ class TechnologyRestConsumerTest {
     }
 
     @Test
-    void When_DeletingOrphanedTechnologiesForCapabilitiesFails_Expect_TechnologyServiceUnavailableException() {
+    void When_DeletingOrphanedTechnologiesForCapabilitiesFails_Expect_ServiceUnavailableException() {
         // Arrange
         mockBackEnd.enqueue(new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -212,7 +212,7 @@ class TechnologyRestConsumerTest {
 
         // Act & Assert
         StepVerifier.create(technologyRestConsumer.deleteOrphanedTechnologiesForCapabilities(List.of(CAPABILITY_ID)))
-                .expectError(TechnologyServiceUnavailableException.class)
+                .expectError(ServiceUnavailableException.class)
                 .verify(Duration.ofSeconds(2));
     }
 }
